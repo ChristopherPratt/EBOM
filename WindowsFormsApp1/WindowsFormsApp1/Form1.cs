@@ -185,6 +185,18 @@ namespace WindowsFormsApp1
             CreateExcelFile c;
             c = new CreateExcelFile();
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            LoadXML l;
+            l = new LoadXML();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            LoadTemplate t;
+            t = new LoadTemplate();
+        }
         //private bool isSelectedCell(int[] Rows, int ColumnIndex)
         //{
         //    if (dataGrid.SelectedCells.Count > 0)

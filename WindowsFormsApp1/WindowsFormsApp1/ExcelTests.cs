@@ -17,9 +17,8 @@ using System.Runtime.InteropServices;
 
 namespace WindowsFormsApp1
 {
-    class CreateExcelFile
+    class ExcelTests
     {
-
         public class myCell
         {
             public int rowIndex { get; set; }
@@ -53,7 +52,7 @@ namespace WindowsFormsApp1
             public double width { get; set; }
             public double height { get; set; }
             public double color { get; set; }
-            
+
             public bool merge { get; set; }
             //public Border topLineStyle { get; set; }
             //public Border topWeight { get; set; }
@@ -84,7 +83,7 @@ namespace WindowsFormsApp1
         public static int DefaultCellHeight = 0;
         public static int rowLabelLength = 30;
 
-       
+
         public static List<String> ElementList = new List<String>();
 
         int HeaderElementCounter = 0;
@@ -95,9 +94,9 @@ namespace WindowsFormsApp1
 
         XmlNodeList nodeList;
 
-        public CreateExcelFile()
+        public ExcelTests()
         {
-            
+
             time = getTime();
             Thread gui = new Thread(delegate ()
             {
@@ -114,7 +113,7 @@ namespace WindowsFormsApp1
                 //}
                 try
                 {
-                    readExcelFile(2,4);
+                    readExcelFile(2, 4);
                 }
                 finally
                 {
@@ -133,7 +132,7 @@ namespace WindowsFormsApp1
             });
             gui.Name = "gui";
             gui.Start();
-            
+
 
 
         }
@@ -144,7 +143,7 @@ namespace WindowsFormsApp1
         Worksheet xlWorkSheet;
         public void saveExcelFile()
         {
-            
+
             try
             {
                 //Start the Microsoft Excel Application
@@ -155,10 +154,10 @@ namespace WindowsFormsApp1
                     MessageBox.Show("Excel is not properly installed!!");
                     return;
                 }
-                 xlWorkBooks = xlApp.Workbooks;
-                 xlWorkBook = xlWorkBooks.Add();
-                 xlWorkSheets = xlWorkBook.Worksheets;
-                 xlWorkSheet = xlWorkSheets.get_Item(1);
+                xlWorkBooks = xlApp.Workbooks;
+                xlWorkBook = xlWorkBooks.Add();
+                xlWorkSheets = xlWorkBook.Worksheets;
+                xlWorkSheet = xlWorkSheets.get_Item(1);
 
                 /*
                  * 
@@ -240,11 +239,11 @@ namespace WindowsFormsApp1
                 }
                 Console.WriteLine("Finished writing right border");
 
-                for (int column = 0; column < totalColumns - 1; column++) 
+                for (int column = 0; column < totalColumns - 1; column++)
                     writeData(allCells[totalRows - 1, column]);
                 Console.WriteLine("Finished writing bottom border");
 
-                for (int row = 1; row < totalRows - 1; row++) 
+                for (int row = 1; row < totalRows - 1; row++)
                     writeData(allCells[row, 0]);
                 Console.WriteLine("Finished writing left border");
                 ////////////////////// outside border area //////////////////////////
@@ -356,7 +355,7 @@ namespace WindowsFormsApp1
 
 
 
-           
+
             //xlWorkSheet = null;
             //xlWorkBook = null;
             //xlWorkBooks = null;
@@ -373,7 +372,7 @@ namespace WindowsFormsApp1
 
         public void writeData(myCell cell)
         {
-            
+
 
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Interior.Color = cell.color;
             //16777215 color of white cell
@@ -412,7 +411,7 @@ namespace WindowsFormsApp1
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].HorizontalAlignment = cell.horizontalAlignment;
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].VerticalAlignment = cell.verticalAlignment;
 
-            
+
 
 
             if (cell.columnIndex % 2 == 0) // only read borders that are even column numbers to make checker pattern
@@ -431,7 +430,7 @@ namespace WindowsFormsApp1
                 xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Borders(XlBordersIndex.xlEdgeLeft).LineStyle = cell.leftLineStyle;
                 xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Borders(XlBordersIndex.xlEdgeLeft).Weight = cell.leftWeight;
             }
-                
+
 
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex] = cell.text;
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Font.Name = cell.name;
@@ -449,7 +448,7 @@ namespace WindowsFormsApp1
         Worksheet xlWorkSheet2;
         public void readExcelFile(int totalRows, int totalColumns)
         {
-            allCells = new myCell[totalRows,totalColumns];
+            allCells = new myCell[totalRows, totalColumns];
 
             try
             {
@@ -512,16 +511,16 @@ namespace WindowsFormsApp1
 
             }
             finally
-                {
+            {
                 Console.WriteLine("Finished reading Excel File");
-                    Marshal.FinalReleaseComObject(xlWorkSheet2);
-                    xlWorkBook2.Close();
-                    Marshal.FinalReleaseComObject(xlWorkBook2);
-                    xlWorkBooks2.Close();
-                    Marshal.FinalReleaseComObject(xlWorkBooks2);
-                    xlAppOpen.Quit();
-                    Marshal.FinalReleaseComObject(xlAppOpen); // excel objects don't release comObjects to excel so you have to force it
-                }            
+                Marshal.FinalReleaseComObject(xlWorkSheet2);
+                xlWorkBook2.Close();
+                Marshal.FinalReleaseComObject(xlWorkBook2);
+                xlWorkBooks2.Close();
+                Marshal.FinalReleaseComObject(xlWorkBooks2);
+                xlAppOpen.Quit();
+                Marshal.FinalReleaseComObject(xlAppOpen); // excel objects don't release comObjects to excel so you have to force it
+            }
         }
 
         public void getAllCellProperties(Range cell, int row, int column)
@@ -572,7 +571,7 @@ namespace WindowsFormsApp1
             tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
             tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
             allCells[row - 1, column - 1] = tempCell; // the -1 is because in excel you start counting from 1 not 0 and we don't want an empty cell in the
-                                                        // beginning of each column and row.
+                                                      // beginning of each column and row.
         }
 
         public void getAlternatingBortderCellProperties(Range cell, int row, int column)
@@ -624,7 +623,7 @@ namespace WindowsFormsApp1
                 tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
                 tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
             }
-            
+
             allCells[row - 1, column - 1] = tempCell; // the -1 is because in excel you start counting from 1 not 0 and we don't want an empty cell in the
                                                       // beginning of each column and row.
         }
@@ -655,3 +654,4 @@ namespace WindowsFormsApp1
 
     }
 }
+
