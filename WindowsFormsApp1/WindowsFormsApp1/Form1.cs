@@ -183,7 +183,7 @@ namespace WindowsFormsApp1
         private void button2_Click(object sender, EventArgs e)
         {
             CreateExcelFile c;
-            c = new CreateExcelFile();
+           // c = new CreateExcelFile();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -196,6 +196,18 @@ namespace WindowsFormsApp1
         {
             LoadTemplate t;
             t = new LoadTemplate();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            CreateExcelFile c;
+            LoadXML l;
+            LoadTemplate t;
+
+            
+            l = new LoadXML();
+            t = new LoadTemplate();
+            c = new CreateExcelFile(l,t);
         }
         //private bool isSelectedCell(int[] Rows, int ColumnIndex)
         //{

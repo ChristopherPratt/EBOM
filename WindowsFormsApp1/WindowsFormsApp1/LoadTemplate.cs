@@ -54,14 +54,9 @@ namespace WindowsFormsApp1
             public double color { get; set; }
 
             public bool merge { get; set; }
-            //public Border topLineStyle { get; set; }
-            //public Border topWeight { get; set; }
-            //public Border rightLineStyle { get; set; }
-            //public Border rightWeight { get; set; }
-            //public Border bottomLineStyle { get; set; }
-            //public Border bottomWeight { get; set; }
-            //public Border leftLineStyle { get; set; }
-            //public Border leftWeight { get; set; }
+            public int mergeRow { get; set; }
+            public int mergeColumn { get; set; }
+
             public XlLineStyle topLineStyle { get; set; }
             public XlBorderWeight topWeight { get; set; }
             public XlLineStyle rightLineStyle { get; set; }
@@ -73,6 +68,7 @@ namespace WindowsFormsApp1
         }
 
         public myCell[,] allCells;
+        public List<List<int>> mergedArea;
 
         Microsoft.Office.Interop.Excel.Application xlAppOpen;
         Workbooks xlWorkBooks2;
@@ -82,31 +78,31 @@ namespace WindowsFormsApp1
         public LoadTemplate()
         {
 
-            //time = getTime();
-            Thread gui = new Thread(delegate ()
+            try
             {
-                try
-                {
-                    readExcelFile(1000,1000); // choosing unthinkably huge number since i want to be able to cover any size template
-                }                               // breaks in the loops that use those numbers prevent inefficiency.
-                finally
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
-            
+                readExcelFile(1000, 1000); // choosing unthinkably huge number since i want to be able to cover any size template
+            }                               // breaks in the loops that use those numbers prevent inefficiency.
+            finally
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            ////time = getTime();
+            //Thread gui = new Thread(delegate ()
+            //{
             //    try
             //    {
-            //        saveExcelFile();
-            //    }
+            //        readExcelFile(1000,1000); // choosing unthinkably huge number since i want to be able to cover any size template
+            //    }                               // breaks in the loops that use those numbers prevent inefficiency.
             //    finally
             //    {
             //        GC.Collect();
             //        GC.WaitForPendingFinalizers();
             //    }
-            });
-            gui.Name = "gui";
-            gui.Start();
+            //});
+            //gui.Name = "gui";
+            //gui.Start();
 
 
 
@@ -159,6 +155,7 @@ namespace WindowsFormsApp1
             int emptyColumnCellCount = 0;
             int emptyRowCellCount = 0;
             List<List<myCell>> tempAllCells = new List<List<myCell>>();
+            mergedArea = new List<List<int>>();
             List<myCell> temp;
             myCell tempCell;
             for (int row = 1; row < totalRows + 1; row++)
@@ -220,6 +217,9 @@ namespace WindowsFormsApp1
         public myCell getAllCellProperties(Range cell, int row, int column)
         {
             myCell tempCell = new myCell();
+            List<int> tempMerge = new List<int>();
+            List<int> reservedCellsForMerge = new List<int>();
+            bool matched = false;
 
             tempCell.rowIndex = row;
             tempCell.columnIndex = column;
@@ -239,13 +239,50 @@ namespace WindowsFormsApp1
             //    tempCell.complexWords[a].underline = temp.Font.Underline;
             //    tempCell.complexWords[a].strikeThrough = temp.Font.Strikethrough;
             //}
+            Range mergedCells;
+            tempCell.merge = cell[1, 1].MergeCells();
+            if (tempCell.merge) // if a cell is detected to be merged to another cell
+            {
+                matched = false;
+                tempMerge = new List<int>();
+                
+                if (mergedArea.Count > 0) // can't iterate through empty list so make sure it isn't empty
+                    foreach (List<int> temp in mergedArea) // iterate through all listed merged areas so far
+                    {
+                        for (int a = temp[0]; a < temp[2] + 1; a++)
+                        {
+                            for (int b = temp[1]; b < temp[3] + 1; b++)
+                            {
+                                if (a == row && b == column) //if new merged area == any other merged area listed so far
+                                {
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            if (matched) break;
+                        }
+                        if (matched) break;
+                    }
+                if (!matched)
+                {
+                    mergedCells = cell[1, 1].MergeArea(); //save merged area object to merged cells
+                    tempMerge.Add(row);
+                    tempMerge.Add(column);
+                    tempMerge.Add(mergedCells.Rows.Count + row - 1); // add how many rows are merged to current row index minus 1
+                    tempMerge.Add(mergedCells.Columns.Count + column - 1);// same as above but with columns
+
+                    mergedArea.Add(tempMerge); // only if it doesn't match a previous merged area, add to merge list.
+                }
+                    
+            }
+
             tempCell.horizontalAlignment = cell[1, 1].HorizontalAlignment;
             tempCell.verticalAlignment = cell[1, 1].VerticalAlignment;
             tempCell.text = cell[1, 1].Text;
             tempCell.height = cell[1, 1].RowHeight;
             tempCell.width = cell[1, 1].ColumnWidth;
             tempCell.color = cell[1, 1].Interior.Color;
-            tempCell.merge = cell[1, 1].MergeCells();
+            
             tempCell.name = cell[1, 1].Font.Name;
             tempCell.size = cell[1, 1].Font.Size;
             tempCell.fontColor = cell[1, 1].Font.Color;
@@ -253,8 +290,6 @@ namespace WindowsFormsApp1
             tempCell.italic = cell[1, 1].Font.Italic;
             tempCell.underline = cell[1, 1].Font.Underline;
             tempCell.strikeThrough = cell[1, 1].Font.Strikethrough;
-
-
 
             tempCell.topLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeTop).LineStyle;
             tempCell.topWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeTop).Weight;
