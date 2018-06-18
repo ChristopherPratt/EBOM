@@ -62,7 +62,7 @@ namespace WindowsFormsApp1
                     {
                         writeData(template.allCells[row, column]);
                     }
-                    Console.WriteLine("Finished writing row " + row);
+                    Console.WriteLine("Finished writing row " + (row + 1));
                 }
 
                 setRowsAndColumnDimensions(totalRows, totalColumns);
@@ -94,10 +94,10 @@ namespace WindowsFormsApp1
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].HorizontalAlignment = cell.horizontalAlignment;
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].VerticalAlignment = cell.verticalAlignment;
 
-            if (cell.topLineStyle == XlLineStyle.xlLineStyleNone) cell.topWeight = XlBorderWeight.xlHairline;
-            if (cell.rightLineStyle == XlLineStyle.xlLineStyleNone) cell.rightWeight = XlBorderWeight.xlHairline;
-            if (cell.bottomLineStyle == XlLineStyle.xlLineStyleNone) cell.bottomWeight = XlBorderWeight.xlHairline;
-            if (cell.leftLineStyle == XlLineStyle.xlLineStyleNone) cell.leftWeight = XlBorderWeight.xlHairline;
+            //if (cell.topLineStyle == XlLineStyle.xlLineStyleNone) cell.topWeight = XlBorderWeight.xlHairline;
+            //if (cell.rightLineStyle == XlLineStyle.xlLineStyleNone) cell.rightWeight = XlBorderWeight.xlHairline;
+            //if (cell.bottomLineStyle == XlLineStyle.xlLineStyleNone) cell.bottomWeight = XlBorderWeight.xlHairline;
+            //if (cell.leftLineStyle == XlLineStyle.xlLineStyleNone) cell.leftWeight = XlBorderWeight.xlHairline;
 
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Borders(XlBordersIndex.xlEdgeTop).LineStyle = cell.topLineStyle;
             xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Borders(XlBordersIndex.xlEdgeTop).Weight = cell.topWeight;

@@ -65,11 +65,13 @@ namespace WindowsFormsApp1
             public XlBorderWeight bottomWeight { get; set; }
             public XlLineStyle leftLineStyle { get; set; }
             public XlBorderWeight leftWeight { get; set; }
+
+            public bool moreThanText { get; set; }
         }
 
         public myCell[,] allCells;
         public List<List<int>> mergedArea;
-
+        string time;
         Microsoft.Office.Interop.Excel.Application xlAppOpen;
         Workbooks xlWorkBooks2;
         Workbook xlWorkBook2;
@@ -77,9 +79,10 @@ namespace WindowsFormsApp1
 
         public LoadTemplate()
         {
-
+            time = getTime();
             try
             {
+                copyExcelFile();
                 readExcelFile(1000, 1000); // choosing unthinkably huge number since i want to be able to cover any size template
             }                               // breaks in the loops that use those numbers prevent inefficiency.
             finally
@@ -107,6 +110,19 @@ namespace WindowsFormsApp1
 
 
         }
+
+        public void copyExcelFile()
+        {
+            File.Copy(System.AppDomain.CurrentDomain.BaseDirectory + "template" + ".xlsx", System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM " + time + ".xlsx");
+        }
+
+        private string getTime()
+        {
+            string datePatt = @"hh.mm.ss.ff";
+            DateTime saveUtcNow = DateTime.UtcNow;
+            return saveUtcNow.ToString(datePatt);
+        }
+
         public void readExcelFile(int totalRows, int totalColumns)
         {
             //allCells = new myCell[totalRows, totalColumns];
@@ -114,7 +130,7 @@ namespace WindowsFormsApp1
             try
             {
                 //string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "Ebom_testing" + ".xlsx";
-                string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template" + ".xlsx";
+                string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM " + time + ".xlsx";
 
                 if (!File.Exists(excelTemplate))
                 {
@@ -198,13 +214,13 @@ namespace WindowsFormsApp1
                     }
                 }
                 Console.WriteLine("Finished reading row " + row);
-                if (emptyColumnCellCount- cellBuffer == longestRow)
+                if (emptyColumnCellCount - cellBuffer == longestRow)
                 {
                     emptyRowCellCount++;
                     if (emptyRowCellCount >= cellBuffer) break;
                 }
                 else emptyRowCellCount = 0;
-                
+
             }
             allCells = new myCell[tempAllCells.Count - cellBuffer, longestRow];
             for (int a = 0; a < tempAllCells.Count - cellBuffer; a++)
@@ -213,7 +229,8 @@ namespace WindowsFormsApp1
 
         }
 
-
+        public bool getallPropertiesOfRow = false;
+        public int currentRow = 0;
         public myCell getAllCellProperties(Range cell, int row, int column)
         {
             myCell tempCell = new myCell();
@@ -224,86 +241,186 @@ namespace WindowsFormsApp1
             tempCell.rowIndex = row;
             tempCell.columnIndex = column;
 
-            //tempCell.complexWords = GetStringProperties(cell[1,1], cell[1, 1].Text);
-            //tempCell.complexWords = new List<myCell.myFont>();
-            //string text = cell[1, 1].Text;
-            //for (int a = 0; a < text.Length+1; a++)
-            //{
-            //    tempCell.complexWords.Add(new myCell.myFont());
-            //    Characters temp = cell[1, 1].Characters(a,1);
-            //    tempCell.complexWords[a].name = temp.Font.Name;
-            //    tempCell.complexWords[a].size = temp.Font.Size;
-            //    tempCell.complexWords[a].color = temp.Font.Color;
-            //    tempCell.complexWords[a].bold = temp.Font.Bold;
-            //    tempCell.complexWords[a].italic = temp.Font.Italic;
-            //    tempCell.complexWords[a].underline = temp.Font.Underline;
-            //    tempCell.complexWords[a].strikeThrough = temp.Font.Strikethrough;
-            //}
-            Range mergedCells;
-            tempCell.merge = cell[1, 1].MergeCells();
-            if (tempCell.merge) // if a cell is detected to be merged to another cell
-            {
-                matched = false;
-                tempMerge = new List<int>();
-                
-                if (mergedArea.Count > 0) // can't iterate through empty list so make sure it isn't empty
-                    foreach (List<int> temp in mergedArea) // iterate through all listed merged areas so far
-                    {
-                        for (int a = temp[0]; a < temp[2] + 1; a++)
-                        {
-                            for (int b = temp[1]; b < temp[3] + 1; b++)
-                            {
-                                if (a == row && b == column) //if new merged area == any other merged area listed so far
-                                {
-                                    matched = true;
-                                    break;
-                                }
-                            }
-                            if (matched) break;
-                        }
-                        if (matched) break;
-                    }
-                if (!matched)
-                {
-                    mergedCells = cell[1, 1].MergeArea(); //save merged area object to merged cells
-                    tempMerge.Add(row);
-                    tempMerge.Add(column);
-                    tempMerge.Add(mergedCells.Rows.Count + row - 1); // add how many rows are merged to current row index minus 1
-                    tempMerge.Add(mergedCells.Columns.Count + column - 1);// same as above but with columns
+            
 
-                    mergedArea.Add(tempMerge); // only if it doesn't match a previous merged area, add to merge list.
-                }
-                    
-            }
-
-            tempCell.horizontalAlignment = cell[1, 1].HorizontalAlignment;
-            tempCell.verticalAlignment = cell[1, 1].VerticalAlignment;
             tempCell.text = cell[1, 1].Text;
-            tempCell.height = cell[1, 1].RowHeight;
-            tempCell.width = cell[1, 1].ColumnWidth;
-            tempCell.color = cell[1, 1].Interior.Color;
-            
-            tempCell.name = cell[1, 1].Font.Name;
-            tempCell.size = cell[1, 1].Font.Size;
-            tempCell.fontColor = cell[1, 1].Font.Color;
-            tempCell.bold = cell[1, 1].Font.Bold;
-            tempCell.italic = cell[1, 1].Font.Italic;
-            tempCell.underline = cell[1, 1].Font.Underline;
-            tempCell.strikeThrough = cell[1, 1].Font.Strikethrough;
-
-            tempCell.topLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeTop).LineStyle;
-            tempCell.topWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeTop).Weight;
-            tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle;
-            tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
-            tempCell.bottomLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).LineStyle;
-            tempCell.bottomWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).Weight;
-            tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
-            tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
-            //allCells[row - 1, column - 1] = tempCell; // the -1 is because in excel you start counting from 1 not 0 and we don't want an empty cell in the
-                                                      // beginning of each column and row.
+            if (currentRow != row) getallPropertiesOfRow = false;
+            if (tempCell.text.Equals("Body1:[TextHere]"))
+            {
+                getallPropertiesOfRow = true;
+                currentRow = row;
+            }
+            if (getallPropertiesOfRow)
+            {
+                tempCell.moreThanText = true;
+                tempCell.color = cell[1, 1].Interior.Color;
+                if (tempCell.rightLineStyle != XlLineStyle.xlLineStyleNone) // only add border style to cell class if it is other than the expected default.
+                {                    
+                    tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
+                    tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
+                    tempCell.bottomLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).LineStyle;
+                    tempCell.bottomWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).Weight;
+                    tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
+                    tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
+                }
+            }
             return tempCell;
-            
-
         }
+        //public myCell getAllCellProperties(Range cell, int row, int column)
+        //{
+        //    myCell tempCell = new myCell();
+        //    List<int> tempMerge = new List<int>();
+        //    List<int> reservedCellsForMerge = new List<int>();
+        //    bool matched = false;
+
+        //    tempCell.rowIndex = row;
+        //    tempCell.columnIndex = column;
+
+        //    //tempCell.complexWords = GetStringProperties(cell[1,1], cell[1, 1].Text);
+        //    //tempCell.complexWords = new List<myCell.myFont>();
+        //    //string text = cell[1, 1].Text;
+        //    //for (int a = 0; a < text.Length+1; a++)
+        //    //{
+        //    //    tempCell.complexWords.Add(new myCell.myFont());
+        //    //    Characters temp = cell[1, 1].Characters(a,1);
+        //    //    tempCell.complexWords[a].name = temp.Font.Name;
+        //    //    tempCell.complexWords[a].size = temp.Font.Size;
+        //    //    tempCell.complexWords[a].color = temp.Font.Color;
+        //    //    tempCell.complexWords[a].bold = temp.Font.Bold;
+        //    //    tempCell.complexWords[a].italic = temp.Font.Italic;
+        //    //    tempCell.complexWords[a].underline = temp.Font.Underline;
+        //    //    tempCell.complexWords[a].strikeThrough = temp.Font.Strikethrough;
+        //    //}
+        //    Range mergedCells;
+        //    tempCell.merge = cell[1, 1].MergeCells();
+        //    if (tempCell.merge) // if a cell is detected to be merged to another cell
+        //    {
+        //        matched = false;
+        //        tempMerge = new List<int>();
+
+        //        if (mergedArea.Count > 0) // can't iterate through empty list so make sure it isn't empty
+        //            foreach (List<int> temp in mergedArea) // iterate through all listed merged areas so far
+        //            {
+        //                for (int a = temp[0]; a < temp[2] + 1; a++)
+        //                {
+        //                    for (int b = temp[1]; b < temp[3] + 1; b++)
+        //                    {
+        //                        if (a == row && b == column) //if new merged area == any other merged area listed so far
+        //                        {
+        //                            matched = true;
+        //                            break;
+        //                        }
+        //                    }
+        //                    if (matched) break;
+        //                }
+        //                if (matched) break;
+        //            }
+        //        if (!matched)
+        //        {
+        //            mergedCells = cell[1, 1].MergeArea(); //save merged area object to merged cells
+        //            tempMerge.Add(row);
+        //            tempMerge.Add(column);
+        //            tempMerge.Add(mergedCells.Rows.Count + row - 1); // add how many rows are merged to current row index minus 1
+        //            tempMerge.Add(mergedCells.Columns.Count + column - 1);// same as above but with columns
+
+        //            mergedArea.Add(tempMerge); // only if it doesn't match a previous merged area, add to merge list.
+        //        }
+
+        //    }
+
+        //    tempCell.horizontalAlignment = cell[1, 1].HorizontalAlignment;
+        //    tempCell.verticalAlignment = cell[1, 1].VerticalAlignment;
+        //    tempCell.text = cell[1, 1].Text;
+        //    tempCell.height = cell[1, 1].RowHeight;
+        //    tempCell.width = cell[1, 1].ColumnWidth;
+        //    tempCell.color = cell[1, 1].Interior.Color;
+
+        //    tempCell.name = cell[1, 1].Font.Name;
+        //    tempCell.size = cell[1, 1].Font.Size;
+        //    tempCell.fontColor = cell[1, 1].Font.Color;
+        //    tempCell.bold = cell[1, 1].Font.Bold;
+        //    tempCell.italic = cell[1, 1].Font.Italic;
+        //    tempCell.underline = cell[1, 1].Font.Underline;
+        //    tempCell.strikeThrough = cell[1, 1].Font.Strikethrough;
+
+        //    tempCell.topLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeTop).LineStyle;
+        //    tempCell.topWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeTop).Weight;
+        //    tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle;
+        //    tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
+        //    tempCell.bottomLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).LineStyle;
+        //    tempCell.bottomWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).Weight;
+        //    tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
+        //    tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
+        //    //allCells[row - 1, column - 1] = tempCell; // the -1 is because in excel you start counting from 1 not 0 and we don't want an empty cell in the
+        //    // beginning of each column and row.
+        //    return tempCell;
+
+
+        //}
+        //public void getCells(int totalRows, int totalColumns)
+        //{
+        //    int cellBuffer = 5;
+        //    bool firstRowFound = false;
+        //    int longestRow = 0;
+        //    int emptyColumnCellCount = 0;
+        //    int emptyRowCellCount = 0;
+        //    List<List<myCell>> tempAllCells = new List<List<myCell>>();
+        //    mergedArea = new List<List<int>>();
+        //    List<myCell> temp;
+        //    myCell tempCell;
+        //    for (int row = 1; row < totalRows + 1; row++)
+        //    {
+        //        temp = new List<myCell>();
+        //        emptyColumnCellCount = 0;
+        //        for (int column = 1; column < totalColumns + 1; column++) // the plus one is because the excel columns and rows start at 1
+        //        {
+        //            tempCell = new myCell();
+        //            tempCell = getAllCellProperties(xlWorkSheet2.Cells[row, column], row, column);
+        //            temp.Add(tempCell);
+        //            // detecting if the cell is uneddited and empty
+        //            if (tempCell.text.Equals("") // no text in cell
+        //                && tempCell.merge == false // not a merged cell
+        //                && tempCell.color == 16777215 // 16777215 is white background cell color
+        //                && tempCell.rightLineStyle == XlLineStyle.xlLineStyleNone // default border line style
+        //                && tempCell.rightWeight == XlBorderWeight.xlThin) // default border weight
+        //                                                                  // only caring about right side of border since we are reading from left to right and there might be valid cells above and beneath.
+        //                emptyColumnCellCount++;
+        //            else emptyColumnCellCount = 0;
+        //            if (emptyColumnCellCount >= cellBuffer)
+        //            {
+        //                if (firstRowFound)
+        //                    if (column - cellBuffer < longestRow) continue;
+        //                    else
+        //                    {
+        //                        longestRow = column - cellBuffer;
+        //                        tempAllCells.Add(temp);
+        //                        //for (int a = 0; a < temp.Count - 5; a++) allCells[row, a] = temp[a];
+        //                        break;
+        //                    }
+        //                else
+        //                {
+        //                    firstRowFound = true;
+        //                    longestRow = column - cellBuffer;
+        //                    tempAllCells.Add(temp);
+        //                    //for (int a = 0; a < temp.Count - 5; a++) allCells[row, a] = temp[a];
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //        Console.WriteLine("Finished reading row " + row);
+        //        if (emptyColumnCellCount - cellBuffer == longestRow)
+        //        {
+        //            emptyRowCellCount++;
+        //            if (emptyRowCellCount >= cellBuffer) break;
+        //        }
+        //        else emptyRowCellCount = 0;
+
+        //    }
+        //    allCells = new myCell[tempAllCells.Count - cellBuffer, longestRow];
+        //    for (int a = 0; a < tempAllCells.Count - cellBuffer; a++)
+        //        for (int b = 0; b < tempAllCells[a].Count - cellBuffer; b++)
+        //            allCells[a, b] = tempAllCells[a][b];
+
+        //}
     }
 }
