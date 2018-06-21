@@ -37,25 +37,28 @@ namespace WindowsFormsApp1
 
             //public List<myFont> complexWords;
 
-            public System.Object name { get; set; }
-            public System.Object size { get; set; }
-            public System.Object fontColor { get; set; }
-            public System.Object bold { get; set; }
-            public System.Object italic { get; set; }
-            public System.Object underline { get; set; }
-            public System.Object strikeThrough { get; set; }
+            //public System.Object name { get; set; }
+            //public System.Object size { get; set; }
+            //public System.Object fontColor { get; set; }
+            //public System.Object bold { get; set; }
+            //public System.Object italic { get; set; }
+            //public System.Object underline { get; set; }
+            //public System.Object strikeThrough { get; set; }
 
-            public System.Object horizontalAlignment;
-            public System.Object verticalAlignment;
+            //public System.Object horizontalAlignment;
+            //public System.Object verticalAlignment;
 
+            public string info { get; set; }
             public string text { get; set; }
-            public double width { get; set; }
-            public double height { get; set; }
+            public int index  { get; set; }
+
+            //public double width { get; set; }
+            //public double height { get; set; }
             public double color { get; set; }
 
-            public bool merge { get; set; }
-            public int mergeRow { get; set; }
-            public int mergeColumn { get; set; }
+            //public bool merge { get; set; }
+            //public int mergeRow { get; set; }
+            //public int mergeColumn { get; set; }
 
             public XlLineStyle topLineStyle { get; set; }
             public XlBorderWeight topWeight { get; set; }
@@ -70,8 +73,13 @@ namespace WindowsFormsApp1
         }
 
         public myCell[,] allCells;
+        public List<myCell> titleBlock;
+        public List<myCell> headerRow;
+        public List<List<myCell>> bodyRows;
+        public List<double> bodyColors;
+
         public List<List<int>> mergedArea;
-        string time;
+        public string time;
         Microsoft.Office.Interop.Excel.Application xlAppOpen;
         Workbooks xlWorkBooks2;
         Workbook xlWorkBook2;
@@ -80,6 +88,10 @@ namespace WindowsFormsApp1
         public LoadTemplate()
         {
             time = getTime();
+            titleBlock = new List<myCell>();
+            headerRow = new List<myCell>();
+            bodyRows = new List<List<myCell>>();
+            bodyColors = new List<double>();
             try
             {
                 copyExcelFile();
@@ -185,7 +197,6 @@ namespace WindowsFormsApp1
                     temp.Add(tempCell);
                     // detecting if the cell is uneddited and empty
                     if (tempCell.text.Equals("") // no text in cell
-                        && tempCell.merge == false // not a merged cell
                         && tempCell.color == 16777215 // 16777215 is white background cell color
                         && tempCell.rightLineStyle == XlLineStyle.xlLineStyleNone // default border line style
                         && tempCell.rightWeight == XlBorderWeight.xlThin) // default border weight
@@ -222,10 +233,10 @@ namespace WindowsFormsApp1
                 else emptyRowCellCount = 0;
 
             }
-            allCells = new myCell[tempAllCells.Count - cellBuffer, longestRow];
-            for (int a = 0; a < tempAllCells.Count - cellBuffer; a++)
-                for (int b = 0; b < tempAllCells[a].Count - cellBuffer; b++)
-                    allCells[a, b] = tempAllCells[a][b];
+            //allCells = new myCell[tempAllCells.Count - cellBuffer, longestRow];
+            //for (int a = 0; a < tempAllCells.Count - cellBuffer; a++)
+            //    for (int b = 0; b < tempAllCells[a].Count - cellBuffer; b++)
+            //        allCells[a, b] = tempAllCells[a][b];
 
         }
 
@@ -234,35 +245,41 @@ namespace WindowsFormsApp1
         public myCell getAllCellProperties(Range cell, int row, int column)
         {
             myCell tempCell = new myCell();
-            List<int> tempMerge = new List<int>();
-            List<int> reservedCellsForMerge = new List<int>();
+            
             bool matched = false;
 
             tempCell.rowIndex = row;
             tempCell.columnIndex = column;
-
-            
-
+           
             tempCell.text = cell[1, 1].Text;
-            if (currentRow != row) getallPropertiesOfRow = false;
-            if (tempCell.text.Equals("Body1:[TextHere]"))
+
+            tempCell.color = cell[1, 1].Interior.Color;
+            tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
+            tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
+            if (tempCell.text.Contains("[TextHere]")) { tempCell.text = tempCell.text.Split(':')[0];  titleBlock.Add(tempCell); return tempCell; }
+            else if (tempCell.text.Contains("[HeaderHere]")) { tempCell.text = tempCell.text.Split('[')[0]; headerRow.Add(tempCell); tempCell.info = tempCell.text;  return tempCell; }
+            else if (tempCell.text.Contains("[BodyHere]"))
             {
-                getallPropertiesOfRow = true;
+                if (currentRow != row)
+                {
+                    bodyRows.Add(new List<myCell>());
+                    bodyColors.Add(cell[1, 1].Interior.Color);
+                }
                 currentRow = row;
-            }
-            if (getallPropertiesOfRow)
-            {
-                tempCell.moreThanText = true;
-                tempCell.color = cell[1, 1].Interior.Color;
+            
+                
+                if (tempCell.color != 16777215) tempCell.moreThanText = true;
                 if (tempCell.rightLineStyle != XlLineStyle.xlLineStyleNone) // only add border style to cell class if it is other than the expected default.
-                {                    
-                    tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
-                    tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
+                {
+                    tempCell.moreThanText = true;
+                    //tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
+                    //tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
                     tempCell.bottomLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).LineStyle;
                     tempCell.bottomWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).Weight;
                     tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
                     tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
                 }
+                bodyRows[bodyRows.Count - 1].Add(tempCell);
             }
             return tempCell;
         }
