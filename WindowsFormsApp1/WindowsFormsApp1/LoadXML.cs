@@ -228,11 +228,15 @@ namespace WindowsFormsApp1
             
             List<List<List<LoadTemplate.myCell>>> bodyDesignatorList = new List<List<List<LoadTemplate.myCell>>>();
             string currentDesignator = "";
-            List<char> charDesignatorList = new List<char>();
+            List<char[]> charDesignatorList = new List<char[]>();
             bool match = false;
+            int charLength = 0;
             for (int a = 1; a < template.bodyRows.Count; a++) //make a  list which is a list of all rows that have the same first letter designator
             {
-                char newDesignator = template.bodyRows[a][designatorIndex].info[0];
+                if (template.bodyRows[a][designatorIndex].info.Contains("PCB")) template.bodyRows[a][designatorIndex].info = "PCB"; // old way EBOM was make had PCB designator be APCB. we are changing that to PCB like it ought.
+                if (!Char.IsLetter(template.bodyRows[a][designatorIndex].info[1])) charLength = 1; else charLength = 2; // get first letter of new designator 
+                char[] newDesignator = new char[charLength];
+                for (int d = 0; d < charLength; d++) newDesignator[d] = template.bodyRows[a][designatorIndex].info[d]; // certain designators have 2 letters, like CN1 so we need to differentiate them from capacitors and the like
                 if (!currentDesignator.Equals(template.bodyRows[a][designatorIndex].info[0]))
                 {
                     for (int b = 0; b < charDesignatorList.Count; b++) if (charDesignatorList[b].Equals(newDesignator)) { bodyDesignatorList[b].Add(template.bodyRows[a]); match = true; break; }

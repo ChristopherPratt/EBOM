@@ -77,6 +77,9 @@ namespace WindowsFormsApp1
         public List<myCell> headerRow;
         public List<List<myCell>> bodyRows;
         public List<double> bodyColors;
+        public string[] sortOrder;
+        public int columnEnd = 1000;
+        public int rowEnd = 1000;
 
         public List<List<int>> mergedArea;
         public string time;
@@ -188,56 +191,61 @@ namespace WindowsFormsApp1
             myCell tempCell;
             for (int row = 1; row < totalRows + 1; row++)
             {
+                if (row == rowEnd) break;
                 temp = new List<myCell>();
                 emptyColumnCellCount = 0;
                 for (int column = 1; column < totalColumns + 1; column++) // the plus one is because the excel columns and rows start at 1
                 {
-                    tempCell = new myCell();
-                    tempCell = getAllCellProperties(xlWorkSheet2.Cells[row, column], row, column);
-                    temp.Add(tempCell);
-                    // detecting if the cell is uneddited and empty
-                    if (tempCell.text.Equals("") // no text in cell
-                        && tempCell.color == 16777215 // 16777215 is white background cell color
-                        && tempCell.rightLineStyle == XlLineStyle.xlLineStyleNone // default border line style
-                        && tempCell.rightWeight == XlBorderWeight.xlThin) // default border weight
-                                                                          // only caring about right side of border since we are reading from left to right and there might be valid cells above and beneath.
-                        emptyColumnCellCount++;
-                    else emptyColumnCellCount = 0;
-                    if (emptyColumnCellCount >= cellBuffer)
-                    {
-                        if (firstRowFound)
-                            if (column - cellBuffer < longestRow) continue;
-                            else
-                            {
-                                longestRow = column - cellBuffer;
-                                tempAllCells.Add(temp);
-                                //for (int a = 0; a < temp.Count - 5; a++) allCells[row, a] = temp[a];
-                                break;
-                            }
-                        else
-                        {
-                            firstRowFound = true;
-                            longestRow = column - cellBuffer;
-                            tempAllCells.Add(temp);
-                            //for (int a = 0; a < temp.Count - 5; a++) allCells[row, a] = temp[a];
-                            break;
-                        }
-                    }
-                }
-                Console.WriteLine("Finished reading row " + row);
-                if (emptyColumnCellCount - cellBuffer == longestRow)
-                {
-                    emptyRowCellCount++;
-                    if (emptyRowCellCount >= cellBuffer) break;
-                }
-                else emptyRowCellCount = 0;
+                    if (column == columnEnd) break;
+                    getAllCellProperties(xlWorkSheet2.Cells[row, column], row, column);
+                    Console.WriteLine("Finished reading row " + row);
+                    //        tempCell = new myCell();
+                    //        tempCell = getAllCellProperties(xlWorkSheet2.Cells[row, column], row, column);
+                    //        temp.Add(tempCell);
+                    //        // detecting if the cell is uneddited and empty
+                    //        if (tempCell.text.Equals("") // no text in cell
+                    //            && tempCell.color == 16777215 // 16777215 is white background cell color
+                    //            && tempCell.rightLineStyle == XlLineStyle.xlLineStyleNone // default border line style
+                    //            && tempCell.rightWeight == XlBorderWeight.xlThin) // default border weight
+                    //                                                              // only caring about right side of border since we are reading from left to right and there might be valid cells above and beneath.
+                    //            emptyColumnCellCount++;
+                    //        else emptyColumnCellCount = 0;
+                    //        if (emptyColumnCellCount >= cellBuffer)
+                    //        {
+                    //            if (firstRowFound)
+                    //                if (column - cellBuffer < longestRow) continue;
+                    //                else
+                    //                {
+                    //                    longestRow = column - cellBuffer;
+                    //                    tempAllCells.Add(temp);
+                    //                    //for (int a = 0; a < temp.Count - 5; a++) allCells[row, a] = temp[a];
+                    //                    break;
+                    //                }
+                    //            else
+                    //            {
+                    //                firstRowFound = true;
+                    //                longestRow = column - cellBuffer;
+                    //                tempAllCells.Add(temp);
+                    //                //for (int a = 0; a < temp.Count - 5; a++) allCells[row, a] = temp[a];
+                    //                break;
+                    //            }
+                    //        }
+                    //    }
+                    //    Console.WriteLine("Finished reading row " + row);
+                    //    if (emptyColumnCellCount - cellBuffer == longestRow)
+                    //    {
+                    //        emptyRowCellCount++;
+                    //        if (emptyRowCellCount >= cellBuffer) break;
+                    //    }
+                    //    else emptyRowCellCount = 0;
 
+                    //}
+                    ////allCells = new myCell[tempAllCells.Count - cellBuffer, longestRow];
+                    ////for (int a = 0; a < tempAllCells.Count - cellBuffer; a++)
+                    ////    for (int b = 0; b < tempAllCells[a].Count - cellBuffer; b++)
+                    ////        allCells[a, b] = tempAllCells[a][b];
+                }
             }
-            //allCells = new myCell[tempAllCells.Count - cellBuffer, longestRow];
-            //for (int a = 0; a < tempAllCells.Count - cellBuffer; a++)
-            //    for (int b = 0; b < tempAllCells[a].Count - cellBuffer; b++)
-            //        allCells[a, b] = tempAllCells[a][b];
-
         }
 
         public bool getallPropertiesOfRow = false;
@@ -256,8 +264,8 @@ namespace WindowsFormsApp1
             tempCell.color = cell[1, 1].Interior.Color;
             tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
             tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
-            if (tempCell.text.Contains("[TextHere]")) { tempCell.text = tempCell.text.Split(':')[0];  titleBlock.Add(tempCell); return tempCell; }
-            else if (tempCell.text.Contains("[HeaderHere]")) { tempCell.text = tempCell.text.Split('[')[0]; headerRow.Add(tempCell); tempCell.info = tempCell.text;  return tempCell; }
+            if (tempCell.text.Contains("[TextHere]")) { tempCell.text = tempCell.text.Split(':')[0]; titleBlock.Add(tempCell); return tempCell; }
+            else if (tempCell.text.Contains("[HeaderHere]")) { tempCell.text = tempCell.text.Split('[')[0]; headerRow.Add(tempCell); tempCell.info = tempCell.text; return tempCell; }
             else if (tempCell.text.Contains("[BodyHere]"))
             {
                 if (currentRow != row)
@@ -266,21 +274,38 @@ namespace WindowsFormsApp1
                     bodyColors.Add(cell[1, 1].Interior.Color);
                 }
                 currentRow = row;
-            
-                
+
+
                 if (tempCell.color != 16777215) tempCell.moreThanText = true;
                 if (tempCell.rightLineStyle != XlLineStyle.xlLineStyleNone) // only add border style to cell class if it is other than the expected default.
                 {
                     tempCell.moreThanText = true;
-                    //tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
-                    //tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
+                    tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
+                    tempCell.rightWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).Weight;
                     tempCell.bottomLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).LineStyle;
                     tempCell.bottomWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeBottom).Weight;
                     tempCell.leftLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).LineStyle;
                     tempCell.leftWeight = (XlBorderWeight)cell[1, 1].Borders(XlBordersIndex.xlEdgeLeft).Weight;
                 }
                 bodyRows[bodyRows.Count - 1].Add(tempCell);
+                return tempCell;
             }
+            else if (tempCell.text.Contains("[Sort]"))
+            {
+                sortOrder = tempCell.text.Split('[')[1].Split(',');                
+                return tempCell;
+            }
+            else if (tempCell.text.Contains("[EndRow]"))
+            {
+                rowEnd = row - 1;
+                return tempCell;
+            }
+            else if (tempCell.text.Contains("[EndColumn]"))
+            {
+                column = column - 1;
+                return tempCell;
+            }
+
             return tempCell;
         }
         //public myCell getAllCellProperties(Range cell, int row, int column)
