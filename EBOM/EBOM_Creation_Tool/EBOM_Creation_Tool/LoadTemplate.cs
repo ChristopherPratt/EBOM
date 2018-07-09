@@ -15,7 +15,7 @@ using System.Reflection;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace WindowsFormsApp1
+namespace EBOMCreationTool
 {
     class LoadTemplate
     {
@@ -90,9 +90,10 @@ namespace WindowsFormsApp1
         public Workbooks xlWorkBooks2;
         public Workbook xlWorkBook2;
         public Worksheet xlWorkSheet2;
-
-        public LoadTemplate()
+        public string templateFileName;
+        public LoadTemplate(string templateFile)
         {
+            templateFileName = templateFile;
             time = getTime();
             titleBlock = new List<myCell>();
             headerRow = new List<myCell>();
@@ -145,19 +146,20 @@ namespace WindowsFormsApp1
 
             try
             {
-                string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
+                //string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
 
-                if (!File.Exists(excelTemplate))
+                if (!File.Exists(@templateFileName))
                 {
-                    throw new Exception("Excel template not found in " + excelTemplate);
+                    throw new Exception("Excel template not found in " + templateFileName);
                 }
                 xlAppOpen = new Microsoft.Office.Interop.Excel.Application();
                 xlWorkBooks2 = xlAppOpen.Workbooks;
                 try
                 {
-                    xlWorkBook2 = xlWorkBooks2.Open(excelTemplate, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
+                    xlWorkBook2 = xlWorkBooks2.Open(templateFileName, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
                 }
-                catch (Exception e) { return; }
+                catch (Exception e)
+                { return; }
                 xlWorkSheet2 = (Worksheet)xlWorkBook2.Worksheets.get_Item(1); //worksheet to write data to
 
                 getCells(totalRows, totalColumns);

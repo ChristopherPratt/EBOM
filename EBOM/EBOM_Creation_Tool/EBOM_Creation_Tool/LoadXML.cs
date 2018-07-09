@@ -15,7 +15,7 @@ using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Core;
 using System.Text.RegularExpressions;
 
-namespace WindowsFormsApp1
+namespace EBOMCreationTool
 {
     class LoadXML
     {
@@ -31,8 +31,10 @@ namespace WindowsFormsApp1
         LoadTemplate template;
 
         public int totalPartCount;
-        public LoadXML(LoadTemplate l)
+        public string xmlFile;
+        public LoadXML(LoadTemplate l, string XMLfile)
         {
+            xmlFile = XMLfile;
             template = l;
             properties = new List<string>();
             propertyValues = new List<string>();
@@ -47,7 +49,8 @@ namespace WindowsFormsApp1
         public void openXML()
         {
             xmlRead = new XmlDocument();
-            xmlRead.Load(System.AppDomain.CurrentDomain.BaseDirectory + "altium.xml");
+            //xmlRead.Load(System.AppDomain.CurrentDomain.BaseDirectory + "altium.xml");
+            xmlRead.Load(@xmlFile);
         }
         public string removeUnderscore(string text)
         {

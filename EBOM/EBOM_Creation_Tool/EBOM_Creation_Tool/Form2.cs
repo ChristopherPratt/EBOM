@@ -8,7 +8,7 @@ using System.Windows.Forms;
 using System.Threading;
 
 
-namespace WindowsFormsApp1
+namespace EBOMCreationTool
 {
     public partial class Form2 : Form
     {

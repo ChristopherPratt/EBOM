@@ -15,7 +15,7 @@ using System.Reflection;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace WindowsFormsApp1
+namespace EBOMCreationTool
 {
     class ExcelTests
     {

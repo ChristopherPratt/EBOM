@@ -15,7 +15,7 @@ using System.Reflection;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace WindowsFormsApp1
+namespace EBOMCreationTool
 {
     class CreateExcelFile
     {
@@ -32,15 +32,16 @@ namespace WindowsFormsApp1
         Workbook xlWorkBook;
         Sheets xlWorkSheets;
         Worksheet xlWorkSheet;
-        public CreateExcelFile(LoadXML x, LoadTemplate t)
+        public CreateExcelFile(LoadXML x, LoadTemplate t, string ExportFileName)
         {
             XML = x;
             template = t;
             try
             {
                 //Start the Microsoft Excel Application
-                string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
-
+                //string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
+                
+                
                 //xlApp = new Microsoft.Office.Interop.Excel.Application();
                 //if (xlApp == null)
                 //{
@@ -117,7 +118,8 @@ namespace WindowsFormsApp1
                 }
                 Console.WriteLine("Total Part Count: " + XML.totalPartCount);
                 if (c != XML.totalPartCount) MessageBox.Show("WARNING!\nNot all parts exported to BOM from xml.");
-                xlWorkBook.SaveAs(System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM1 " + template.time + ".xlsx");
+                //xlWorkBook.SaveAs(System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM1 " + template.time + ".xlsx");
+                xlWorkBook.SaveAs(@ExportFileName);
 
             }
             finally
