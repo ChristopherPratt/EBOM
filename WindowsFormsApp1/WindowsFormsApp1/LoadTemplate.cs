@@ -77,7 +77,7 @@ namespace WindowsFormsApp1
         public List<myCell> headerRow;
         public List<List<myCell>> bodyRows;
         public List<double> bodyColors;
-        public string[] sortOrder;
+        public List<List<string>> sortOrder;
         public int columnEnd = 1000;
         public int rowEnd = 1000;
 
@@ -186,6 +186,7 @@ namespace WindowsFormsApp1
             int emptyColumnCellCount = 0;
             int emptyRowCellCount = 0;
             List<List<myCell>> tempAllCells = new List<List<myCell>>();
+            sortOrder = new List<List<string>>();
             mergedArea = new List<List<int>>();
             List<myCell> temp;
             myCell tempCell;
@@ -292,7 +293,16 @@ namespace WindowsFormsApp1
             }
             else if (tempCell.text.Contains("[Sort]"))
             {
-                sortOrder = tempCell.text.Split('[')[1].Split(',');                
+                string[] sortInfo = tempCell.text.Split(']')[1].Split('('); // possible cell content [Sort](1)P,C,CN,L,R(4)incrementing
+                int sortNum = sortInfo.Length;
+                for (int a = 1; a < sortNum; a++)
+                {
+                    sortOrder.Add(new List<string>());
+                    string[] tempDelimiter = sortInfo[a].Split(',');
+                    sortOrder[sortOrder.Count - 1].Add(sortInfo[a].Split(')')[0]);
+                    sortOrder[sortOrder.Count - 1].Add(column.ToString());
+                    foreach (string tempString in tempDelimiter) sortOrder[sortOrder.Count - 1].Add(tempString); // should make above cell entry into { {1, *column* , P,C,CN,L,R} , {4, *column*, incrementing} }
+                }
                 return tempCell;
             }
             else if (tempCell.text.Contains("[EndRow]"))

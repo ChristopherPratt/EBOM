@@ -13,6 +13,7 @@ using System.IO;
 using System.Xml;
 using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Core;
+using System.Text.RegularExpressions;
 
 namespace WindowsFormsApp1
 {
@@ -22,7 +23,7 @@ namespace WindowsFormsApp1
         List<string> headers;
         List<string> propertyValues;
         List<List<string>> unsorted;
-        public List<List<List<LoadTemplate.myCell>>> sorted;
+        public List<List<LoadTemplate.myCell>> sorted;
         XmlDocument xmlRead;
         XmlNodeList nodeList;
         string apcbField = "";
@@ -37,7 +38,7 @@ namespace WindowsFormsApp1
             propertyValues = new List<string>();
             headers = new List<string>();
             unsorted = new List<List<string>>();
-            sorted = new List<List<List<LoadTemplate.myCell>>>();
+            sorted = new List<List<LoadTemplate.myCell>>();
             openXML();
             getHeaderTitles();
             getPartInfo();
@@ -210,6 +211,110 @@ namespace WindowsFormsApp1
 
 
         }
+
+        //public void initialSorting(List<List<LoadTemplate.myCell>> bodyList, List<List<string>> sort)
+        //{
+        //    List<int> columnOrderIndexes = new List<int>();
+        //    List<string> temp = new List<string>();
+        //    for (int a = 0; a < sort.Count; a++)
+        //    {
+        //        columnOrderIndexes.Add(Convert.ToInt32(sort[a][1]));
+        //    }
+
+
+
+
+
+        //    Regex re = new Regex(@"([a-zA-Z]+)(\d+)");
+
+
+
+
+            
+        //    foreach (List<LoadTemplate.myCell> row in bodyList)
+        //    {
+        //        Match result = re.Match(row[designatorIndex].info);
+        //        temp.Add(result.Groups[1].Value + "_" + row[packageIndex].info + "_" + row[valueIndex].info + "_" + result.Groups[2].Value);
+        //    }
+        //}
+
+        //public void sorting(List<List<LoadTemplate.myCell>> list, int sortColumn, List<string> delimiter)
+        //{
+        //    List<List<LoadTemplate.myCell>> sortedList = new List<List<LoadTemplate.myCell>>();
+        //    bool matched = false;
+
+        //    sortedList.Add(list[0]);
+        //    for (int a = 0; a < delimiter.Count; a++) // loop through the full list of parts for each delimiter and add it to the sortedList in order.
+        //    {
+        //        for (int b = 0; b < list.Count; b++) //looping through the list
+        //        {
+                    
+        //            if (compareDelimiters(delimiter, a, list[b][sortColumn].info, list, sortedList)) sortedList.Add(list[b]);
+        //            //if (list[b][sortColumn].info.Equals(delimiter[a])) sortedList.Add(list[b]);
+
+        //        }
+        //    }
+        //}
+        //public bool compareDelimiters(List<string> delimiter, int delimiterIndex, string info, List<List<LoadTemplate.myCell>> list, List<List<LoadTemplate.myCell>> sortedList)
+        //{
+        //    List<List<LoadTemplate.myCell>> tempSortedList = new List<List<LoadTemplate.myCell>>();
+
+        //    List<string> similarDelimiters = new List<string>();
+        //    int delimiterLength = delimiter[delimiterIndex].Length;
+        //    bool matched = false;
+
+        //    if (delimiter[delimiterIndex].Equals("incrementing"))
+        //    {
+                
+        //    }
+        //    else if (delimiter[delimiterIndex].Equals("descending"))
+        //    {
+
+        //    }
+        //    else
+        //    {
+        //        for (int x = 0; x < delimiter[delimiterIndex].Length; x++) // loop through each character of a delimiter we want to test
+        //        {
+        //            if (delimiter[delimiterIndex][x].Equals(info[x])) matched = true; // if the character matches the cells text character then continue, if not, then break
+        //            else { matched = false; break; }
+        //        }
+        //        if (matched) // now we need to test and make sure that there aren't other delimiters which are similar to the one we tested.
+        //        {
+        //            for (int y = 0; y < delimiter.Count; y++) // loop through all delimiters that we are sorting
+        //            {
+        //                if (y == delimiterIndex) continue; // we don't want to compare the delimeter we already compared.
+        //                for (int z = 0; z < delimiter[y].Length; z++)
+        //                {
+        //                    if (delimiter[y][z].Equals(info[z])) matched = true; // see if there are any other delimiters which match the cell text that we were comparing earlier
+        //                    else { matched = false; break; } 
+        //                }
+        //                if (matched && delimiter[y].Length > delimiterLength) { }//return false; // if another longer delimeter is a better match for the cell text, return false, but if we 
+        //                //else return true;                                                   //were right the first time and there are no better matches, return false;
+        //            }
+        //        }
+        //    }
+        //    return false;
+        //        //for (int a = 0; a < info.Length; a++) // for each character of text in question
+        //        //{
+        //        //    if (delimiter[delimiterIndex][a].Equals(info[a]))
+        //        //    {
+        //        //        for (int b = 0; b > delimiter.Length; b++)
+        //        //        {
+        //        //            if (b == delimiterIndex) continue; // skip this index since we already compared this one successfully
+        //        //            if (delimiter[b][a].Equals(info[a]))
+        //        //            {
+        //        //            }
+        //        //        }
+        //        //    }
+        //        //}
+
+        //}
+
+        public bool sorting()
+        {
+            return false;
+        }
+
         public void sort()
         {
             int quantityIndex = 0;
@@ -221,13 +326,62 @@ namespace WindowsFormsApp1
             for (int a = 0; a < template.headerRow.Count; a++)
             {
                 if (template.headerRow[a].text.ToLower().Contains("quan") || template.headerRow[a].text.ToLower().Contains("qty")) quantityIndex = a; // get the indexes or certain header columns
-                if (template.headerRow[a].text.ToLower().Contains("val")) valueIndex = a;
-                if (template.headerRow[a].text.ToLower().Contains("pack")) packageIndex = a;
-                if (template.headerRow[a].text.ToLower().Contains("desi")) designatorIndex = a;
+                //if (template.headerRow[a].text.ToLower().Contains("val")) valueIndex = a;
+                //if (template.headerRow[a].text.ToLower().Contains("pack")) packageIndex = a;
+                //if (template.headerRow[a].text.ToLower().Contains("desi")) designatorIndex = a;
             }
+
+            List<List<string>> newSortOrder = new List<List<string>>();
+            for (int a = 0; a < template.sortOrder.Count; a++)
+            {
+                for (int b = 0; b < template.sortOrder.Count; b++)
+                {
+                    if (template.sortOrder[b][0].Equals((a + 1).ToString())) { newSortOrder.Add(template.sortOrder[b]); break; }
+                }
+            }
+            template.sortOrder = newSortOrder;
+
+            int matchedCount = 0;
+            sorted.Add(template.bodyRows[0]);
+            for (int a = 1; a < template.bodyRows.Count; a++) // for each component
+            {
+                matchedCount = 0;
+                for (int b = 0; b < sorted.Count; b++) // for each sorted component
+                {
+                    int tempMatchedCount = 0;
+                    for (int c = 0; c < template.sortOrder.Count; c++) // for each sort method
+                    {
+                        if (sorting(template.bodyRows[a],  ))
+                    }
+                }
+            }
+
+
+
+            //sorting(template.bodyRows);
+
+            Regex re = new Regex(@"([a-zA-Z]+)(\d+)");
             
+
+            //List<string> temp = new List<string>();
+            //foreach (List<LoadTemplate.myCell> row in template.bodyRows)
+            //{
+            //    Match result = re.Match(row[designatorIndex].info);
+            //    temp.Add(result.Groups[1].Value + "_" + row[packageIndex].info + "_" + row[valueIndex].info + "_" + result.Groups[2].Value);
+            //}
+            //temp.Sort();
+
+            //initialSorting(template.bodyRows, template.sortOrder);
+
+            
+
+            //initialSorting(template.bodyRows, template.sortOrder);
+
+            //foreach (List<string> mySort in newSortOrder) sorting(template.bodyRows, Convert.ToInt32(mySort[1]), mySort);
+            
+            ////////////////////////////// create unique lists of all designators ///////////////////////////////// BOM<Designator<Rows<Cells>>>
             List<List<List<LoadTemplate.myCell>>> bodyDesignatorList = new List<List<List<LoadTemplate.myCell>>>();
-            string currentDesignator = "";
+            char[] currentDesignator = new char[] { ' ' }; // placeholder for first example
             List<char[]> charDesignatorList = new List<char[]>();
             bool match = false;
             int charLength = 0;
@@ -237,9 +391,9 @@ namespace WindowsFormsApp1
                 if (!Char.IsLetter(template.bodyRows[a][designatorIndex].info[1])) charLength = 1; else charLength = 2; // get first letter of new designator 
                 char[] newDesignator = new char[charLength];
                 for (int d = 0; d < charLength; d++) newDesignator[d] = template.bodyRows[a][designatorIndex].info[d]; // certain designators have 2 letters, like CN1 so we need to differentiate them from capacitors and the like
-                if (!currentDesignator.Equals(template.bodyRows[a][designatorIndex].info[0]))
+                if (!currentDesignator.SequenceEqual(newDesignator))
                 {
-                    for (int b = 0; b < charDesignatorList.Count; b++) if (charDesignatorList[b].Equals(newDesignator)) { bodyDesignatorList[b].Add(template.bodyRows[a]); match = true; break; }
+                    for (int b = 0; b < charDesignatorList.Count; b++) if (charDesignatorList[b].SequenceEqual(newDesignator)) { bodyDesignatorList[b].Add(template.bodyRows[a]); match = true; break; }
                     if (match){ match = false; continue; }
                     bodyDesignatorList.Add(new List<List<LoadTemplate.myCell>>());
                     bodyDesignatorList[bodyDesignatorList.Count - 1].Add(template.bodyRows[a]);
@@ -247,37 +401,65 @@ namespace WindowsFormsApp1
                 }
                 else bodyDesignatorList[bodyDesignatorList.Count - 1].Add(template.bodyRows[a]);
             }
+            ////////////////////////////// create unique lists of all designators /////////////////////////////////
 
+            ////////////////////////////// Sort designator by parts with same value///////////////////////////////// BOM<Designator<model<parts<Cells>>>>
+            List<List<List<List<LoadTemplate.myCell>>>> valueDesignatorList = new List<List<List<List<LoadTemplate.myCell>>>>();
             int count = 1;
             for (int a = 0; a < bodyDesignatorList.Count; a++) // loop through all designator lists
             {
-                sorted.Add(new List<List<LoadTemplate.myCell>>());
-                sorted[sorted.Count - 1].Add(bodyDesignatorList[a][0]);
+                valueDesignatorList.Add(new List<List<List<LoadTemplate.myCell>>>());// add new designator list
+                valueDesignatorList[a].Add(new List<List<LoadTemplate.myCell>>());// add new model to list
+
+                valueDesignatorList[a][valueDesignatorList[a].Count - 1].Add(bodyDesignatorList[a][0]); // add first row of new model 
                 for (int b = 1; b < bodyDesignatorList[a].Count; b++) // loop through the rows of a specific designator list
                 {
-                    bodyDesignatorList[a][b][quantityIndex].info = "";
+                    //bodyDesignatorList[a][b][quantityIndex].info = "";
                     matched = false;
                     if (bodyDesignatorList[a][b][valueIndex].info == bodyDesignatorList[a][b - 1][valueIndex].info)
-                        if (bodyDesignatorList[a][b][packageIndex].info == bodyDesignatorList[a][b - 1][packageIndex].info) matched = true; // make sure that the two components are identical
-                        else matched = false;
+                        //if (bodyDesignatorList[a][b][packageIndex].info == bodyDesignatorList[a][b - 1][packageIndex].info) matched = true; // make sure that the two components are identical
+                        matched = true; // make sure that the two components are identical
                     else matched = false;
+                    
 
                     if (matched)
                     {
-                        sorted[sorted.Count - 1].Add(bodyDesignatorList[a][b]); //if both components are the same then add it to the component list
+                        valueDesignatorList[a][valueDesignatorList[a].Count - 1].Add(bodyDesignatorList[a][b]); //if both components are the same then add it to the component list
                         count++;
                     }
                     else
                     {
-                        sorted[sorted.Count - 1][0][quantityIndex].info = count.ToString();
-                        count = 1;
-                        sorted.Add(new List<List<LoadTemplate.myCell>>());
-                        sorted[sorted.Count - 1].Add(bodyDesignatorList[a][b]);
+                        //modelDesignatorList[a][modelDesignatorList.Count - 1][0][quantityIndex].info = count.ToString();
+                        //count = 1;
+                        valueDesignatorList[a].Add(new List<List<LoadTemplate.myCell>>());// add new model to list
+                        valueDesignatorList[a][valueDesignatorList.Count - 1].Add(bodyDesignatorList[a][b]);
 
                     }
                 }
             }
+            ////////////////////////////// Sort designator by parts with same value /////////////////////////////////
 
+            ////////////////////////////// Sort value by parts with same package ///////////////////////////////// BOM<Designator<value<package<parts<Cells>>>>>
+
+            matched = false;
+            string previousPackage = "";
+            List<List<List<List<List<LoadTemplate.myCell>>>>> packageDesignatorList = new List<List<List<List<List<LoadTemplate.myCell>>>>>();
+            for (int a = 0; a < valueDesignatorList.Count; a++)
+            {
+                packageDesignatorList.Add(new List<List<List<List<LoadTemplate.myCell>>>>());// add new designator list
+                for (int b = 0; b < valueDesignatorList[a].Count; b++)
+                {
+                    packageDesignatorList[a].Add(new List<List<List<LoadTemplate.myCell>>>()); // add new value to list
+                    packageDesignatorList[a][b].Add(new List<List<LoadTemplate.myCell>>()); // add new package to list
+                    if (packageDesignatorList[a][b][packageDesignatorList[a][b].Count-1][packageIndex].Equals(previousPackage))
+                    {
+                        packageDesignatorList[]
+                    }
+                    
+                }
+            }
+            ////////////////////////////// Sort value by parts with same package /////////////////////////////////
+            //sort the original 2d array list multiple times instead of creating a 5 dimensional array. it will save memory and be faster and less prone to error hopefully.
 
             //    int count = 0;
             ////temp.Add(template.bodyRows[0]);
