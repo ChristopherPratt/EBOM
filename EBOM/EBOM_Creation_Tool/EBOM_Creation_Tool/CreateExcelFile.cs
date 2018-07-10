@@ -102,7 +102,23 @@ namespace EBOMCreationTool
                 Console.WriteLine("Total Part Count: " + XML.totalPartCount);
                 if (c != XML.totalPartCount) MessageBox.Show("WARNING!\nNot all parts exported to BOM from xml.");
                 //xlWorkBook.SaveAs(System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM1 " + template.time + ".xlsx");
-                xlWorkBook.SaveAs(ExportFileName);
+                bool excelFileIsOpen = false;
+                do
+                {
+                    try
+                    {
+                        xlWorkBook.SaveAs(ExportFileName);
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show("Please close the Excel file with the same name as the .XML file that was chosen.");
+                        excelFileIsOpen = true;
+                        continue;
+                    }
+                    excelFileIsOpen = false;
+                }
+                while (excelFileIsOpen);
+                
 
             }
             finally
