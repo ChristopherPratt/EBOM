@@ -109,7 +109,7 @@ namespace EBOMCreationTool
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                tbTemplate.Text = openFileDialog1.FileName;
+                //tbTemplate.Text = openFileDialog1.FileName;
             }
         }
 
@@ -119,7 +119,7 @@ namespace EBOMCreationTool
             saveFileDialog1.Filter = "Excel files (*.xlsx)|*.*";
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                tbExport.Text = saveFileDialog1.FileName + ".xlsx";
+                //tbExport.Text = saveFileDialog1.FileName + getTime() + ".xlsx";
             }
         }
         private void bStart_Click(object sender, EventArgs e)
@@ -130,12 +130,23 @@ namespace EBOMCreationTool
 
 
 
-            t = new LoadTemplate(tbTemplate.Text);
+            t = new LoadTemplate();
             l = new LoadXML(t, tbXML.Text);
-            c = new CreateExcelFile(l, t, tbExport.Text);
+            c = new CreateExcelFile(l, t);
         }
 
         private void tbExport_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        private string getTime()
+        {
+            string datePatt = @"hh.mm.ss";
+            DateTime time = DateTime.Now;
+            return time.ToString(datePatt);
+        }
+
+        private void tbXML_TextChanged(object sender, EventArgs e)
         {
 
         }

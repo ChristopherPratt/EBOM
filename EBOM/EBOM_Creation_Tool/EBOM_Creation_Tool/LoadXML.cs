@@ -133,7 +133,6 @@ namespace EBOMCreationTool
                     if (template.bodyRows[row][column].info.Contains("ProjectAdditionalNote") || template.bodyRows[row][column].info.Contains("Projectchangeindex")) template.bodyRows[row][column].info = "";
                     if (template.bodyRows[row][column].info.Contains("APCB")) template.bodyRows[row][column].info = "PCB";
                     template.bodyRows[row][column].rowIndex = rowIndex;
-                    // this is the area where the colors are being messed up.
                 }
                 rowIndex++;
 
@@ -230,29 +229,27 @@ namespace EBOMCreationTool
             int currentCompare = 0;
             for (int a = 3; a < sort.Count; a++) // for each sort level
             {
+                currentCompare = 0;
                 for (int b = 0; b < sort[a].Length; b++) // for each character of a sort
                 {
                     if (item.Length >= sort[a].Length) // make sure the item is long enough to compare
                     {
                         if (sort[a][b] == item[b]) // if both items have the same character at the same index
                         {
-                            if (currentElement == a) currentCompare++; // if we are still on the same element increment counter
-                            else
+                            //if (currentElement == a) currentCompare++; // if we are still on the same element increment counter
+                            currentCompare++;
+                            if (b == sort[a].Length - 1 && currentCompare > currentMax) // if its at the end of the compare item and there are more characters alike then any other sort
                             {
-                                if (currentCompare > currentMax) // if current sort counter is greater than max counter for another sort
-                                {
-                                    currentMaxElement = currentElement; // save over new sort counter
-                                    currentMax = currentCompare;
-                                }
-                                currentElement = a; currentCompare = 1; // reset counter and save new element sort
-                            }
+                                currentMaxElement = a; // save over new sort counter
+                                currentMax = currentCompare;
+                                currentCompare = 0; // reset currentcompare
+                            }                           
                         }
-                    }
-                    
-                }
-                
+                        else { currentCompare = 0; break; }
+                    }                    
+                }                
             }
-            if (currentCompare > currentMax) currentMaxElement = currentElement; // for last elements
+            //if (currentCompare > currentMax) currentMaxElement = currentElement; // for last elements
             return currentMaxElement;
         }
         public int getIndexEnd(List<string> sort, string item)
@@ -269,23 +266,34 @@ namespace EBOMCreationTool
                     {
                         if (sort[a][b] == item[b + (item.Length - sort[a].Length)]) // if both items have the same character at the same index
                         {
-                            if (currentElement == a) currentCompare++; // if we are still on the same element increment counter
-                            else
+                            //if (currentElement == a) currentCompare++; // if we are still on the same element increment counter
+                            currentCompare++;
+                            if (b == sort[a].Length - 1 && currentCompare > currentMax) // if its at the end of the compare item and there are more characters alike then any other sort
                             {
-                                if (currentCompare > currentMax) // if current sort counter is greater than max counter for another sort
-                                {
-                                    currentMaxElement = currentElement; // save over new sort counter
-                                    currentMax = currentCompare;
-                                }
-                                currentElement = a; currentCompare = 1; // reset counter and save new element sort
+                                currentMaxElement = a; // save over new sort counter
+                                currentMax = currentCompare;
+                                currentCompare = 0; // reset currentcompare
                             }
                         }
+                        else { currentCompare = 0; break; }
+                        //{
+                        //    if (currentElement == a) currentCompare++; // if we are still on the same element increment counter
+                        //    else
+                        //    {
+                        //        if (currentCompare > currentMax) // if current sort counter is greater than max counter for another sort
+                        //        {
+                        //            currentMaxElement = currentElement; // save over new sort counter
+                        //            currentMax = currentCompare;
+                        //        }
+                        //        currentElement = a; currentCompare = 1; // reset counter and save new element sort
+                        //    }
+                        //}
                     }
 
                 }
 
             }
-            if (currentCompare > currentMax) currentMaxElement = currentElement; // for last element
+            //if (currentCompare > currentMax) currentMaxElement = currentElement; // for last element
             return currentMaxElement;
         }
         //p n m
@@ -358,20 +366,7 @@ namespace EBOMCreationTool
 
         public void sort()
         {
-            //int quantityIndex = template.quantity;
-            //int valueIndex = 0;
-            //int packageIndex = 0;
-            //int designatorIndex = 0;
-
             bool matched = false;
-            //for (int a = 0; a < template.headerRow.Count; a++)
-            //{
-            //    if (template.headerRow[a].text.ToLower().Contains("quan") || template.headerRow[a].text.ToLower().Contains("qty")) quantityIndex = a; // get the indexes or certain header columns
-            //    if (template.headerRow[a].text.ToLower().Contains("val")) valueIndex = a;
-            //    if (template.headerRow[a].text.ToLower().Contains("pack")) packageIndex = a;
-            //    if (template.headerRow[a].text.ToLower().Contains("desi")) designatorIndex = a;
-            //}
-            // resort the sort order so it makes sense
             List<List<string>> newSortOrder = new List<List<string>>();
             for (int a = 0; a < template.sortOrder.Count; a++)
             {
@@ -381,8 +376,6 @@ namespace EBOMCreationTool
                 }
             }
             template.sortOrder = newSortOrder;
-
-            //List<List<LoadTemplate.myCell>> newList = new List<List<LoadTemplate.myCell>>();
             sorted.Add(template.bodyRows[0]);
             for (int a = 1; a < template.bodyRows.Count; a++)
             {
@@ -409,7 +402,9 @@ namespace EBOMCreationTool
             if (template.quantity == 1000 || template.group.Count == 0) updateQuantity = false; // we want to make sure that the template allows for updating a quantity by like components.
             // this section changes the row index to what it should be after sorting because we use the row  index to write to the excel file
             // we also set the quantity of similar parts for the top part based on how many of them there are and leave the other quantity cells blank.
+            int bodyStart = template.bodyRowStart;
             int count = 1;
+            foreach (LoadTemplate.myCell tempMycell in sorted[0]) tempMycell.rowIndex = template.bodyRowStart; // loop through all cells in a row and change each cells row index to what it should be
             template.bodyRowStart++;// because we are starting with the second element in the body rows we need to increment the start of the body row index by 1
             for (int a = 1; a < sorted.Count; a++) // loop through all rows
             {

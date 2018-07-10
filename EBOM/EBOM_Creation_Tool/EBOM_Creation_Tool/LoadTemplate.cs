@@ -26,42 +26,10 @@ namespace EBOMCreationTool
         {
             public int rowIndex { get; set; }
             public int columnIndex { get; set; }
-
-            //public class myFont
-            //{
-            //    public System.Object name { get; set; }
-            //    public System.Object size { get; set; }
-            //    public System.Object color { get; set; }
-            //    public System.Object bold { get; set; }
-            //    public System.Object italic { get; set; }
-            //    public System.Object underline { get; set; }
-            //    public System.Object strikeThrough { get; set; }                
-            //}
-
-            //public List<myFont> complexWords;
-
-            //public System.Object name { get; set; }
-            //public System.Object size { get; set; }
-            //public System.Object fontColor { get; set; }
-            //public System.Object bold { get; set; }
-            //public System.Object italic { get; set; }
-            //public System.Object underline { get; set; }
-            //public System.Object strikeThrough { get; set; }
-
-            //public System.Object horizontalAlignment;
-            //public System.Object verticalAlignment;
-
             public string info { get; set; }
             public string text { get; set; }
             public int index  { get; set; }
-
-            //public double width { get; set; }
-            //public double height { get; set; }
             public double color { get; set; }
-
-            //public bool merge { get; set; }
-            //public int mergeRow { get; set; }
-            //public int mergeColumn { get; set; }
 
             public XlLineStyle topLineStyle { get; set; }
             public XlBorderWeight topWeight { get; set; }
@@ -91,9 +59,8 @@ namespace EBOMCreationTool
         public Workbook xlWorkBook2;
         public Worksheet xlWorkSheet2;
         public string templateFileName;
-        public LoadTemplate(string templateFile)
+        public LoadTemplate()
         {
-            templateFileName = templateFile;
             time = getTime();
             titleBlock = new List<myCell>();
             headerRow = new List<myCell>();
@@ -110,29 +77,6 @@ namespace EBOMCreationTool
                 //GC.Collect();
                 //GC.WaitForPendingFinalizers();
             }
-
-            ////time = getTime();
-            //Thread gui = new Thread(delegate ()
-            //{
-            //    try
-            //    {
-            //        readExcelFile(1000,1000); // choosing unthinkably huge number since i want to be able to cover any size template
-            //    }                               // breaks in the loops that use those numbers prevent inefficiency.
-            //    finally
-            //    {
-            //        GC.Collect();
-            //        GC.WaitForPendingFinalizers();
-            //    }
-            //});
-            //gui.Name = "gui";
-            //gui.Start();
-
-
-
-        }
-        public void copyExcelFile()
-        {
-            File.Copy(System.AppDomain.CurrentDomain.BaseDirectory + "template" + ".xlsx", System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM " + time + ".xlsx");
         }
         private string getTime()
         {
@@ -146,17 +90,17 @@ namespace EBOMCreationTool
 
             try
             {
-                //string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
+                string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
 
-                if (!File.Exists(@templateFileName))
+                if (!File.Exists(excelTemplate))
                 {
-                    throw new Exception("Excel template not found in " + templateFileName);
+                    throw new Exception("Excel template not found in " + excelTemplate);
                 }
                 xlAppOpen = new Microsoft.Office.Interop.Excel.Application();
                 xlWorkBooks2 = xlAppOpen.Workbooks;
                 try
                 {
-                    xlWorkBook2 = xlWorkBooks2.Open(templateFileName, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
+                    xlWorkBook2 = xlWorkBooks2.Open(excelTemplate, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
                 }
                 catch (Exception e)
                 { return; }
@@ -169,13 +113,6 @@ namespace EBOMCreationTool
             finally
             {
                 Console.WriteLine("Finished reading Excel File");
-                //Marshal.FinalReleaseComObject(xlWorkSheet2);
-                //xlWorkBook2.Close();
-                //Marshal.FinalReleaseComObject(xlWorkBook2);
-                //xlWorkBooks2.Close();
-                //Marshal.FinalReleaseComObject(xlWorkBooks2);
-                //xlAppOpen.Quit();
-                //Marshal.FinalReleaseComObject(xlAppOpen); // excel objects don't release comObjects to excel so you have to force it
             }
         }
         public void getCells(int totalRows, int totalColumns)
