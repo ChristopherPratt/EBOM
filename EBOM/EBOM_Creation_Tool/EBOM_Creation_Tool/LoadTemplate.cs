@@ -19,6 +19,7 @@ namespace EBOMCreationTool
 {
     class LoadTemplate
     {
+        MainFrame mainframe;
         public int bodyRowStart { get; set; }
         public int quantity = 1000;
         public List<int> group;
@@ -59,24 +60,21 @@ namespace EBOMCreationTool
         public Workbook xlWorkBook2;
         public Worksheet xlWorkSheet2;
         public string templateFileName;
-        public LoadTemplate()
+        public LoadTemplate(MainFrame m)
         {
+            mainframe = m;
+            if (mainframe.end) return;
             time = getTime();
             titleBlock = new List<myCell>();
             headerRow = new List<myCell>();
             bodyRows = new List<List<myCell>>();
             bodyColors = new List<double>();
             group = new List<int>();
-            try
-            {
+
                 //copyExcelFile();
                 readExcelFile(1000, 1000); // choosing unthinkably huge number since i want to be able to cover any size template
-            }                               // breaks in the loops that use those numbers prevent inefficiency.
-            finally
-            {
-                //GC.Collect();
-                //GC.WaitForPendingFinalizers();
-            }
+                            // breaks in the loops that use those numbers prevent inefficiency.
+
         }
         private string getTime()
         {
@@ -84,6 +82,8 @@ namespace EBOMCreationTool
             DateTime saveUtcNow = DateTime.UtcNow;
             return saveUtcNow.ToString(datePatt);
         }
+
+
 
         public void readExcelFile(int totalRows, int totalColumns)
         {
@@ -103,7 +103,11 @@ namespace EBOMCreationTool
                     xlWorkBook2 = xlWorkBooks2.Open(excelTemplate, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
                 }
                 catch (Exception e)
-                { return; }
+                {
+                    MessageBox.Show("template file is not spelled correctly or is not in the same directory as EBOMCreationTool.exe");
+                    mainframe.end = true;                    
+                    return;
+                }
                 xlWorkSheet2 = (Worksheet)xlWorkBook2.Worksheets.get_Item(1); //worksheet to write data to
 
                 getCells(totalRows, totalColumns);
@@ -112,7 +116,7 @@ namespace EBOMCreationTool
             }
             finally
             {
-                Console.WriteLine("Finished reading Excel File");
+                mainframe.WriteToConsole("Finished reading Excel File");
             }
         }
         public void getCells(int totalRows, int totalColumns)
@@ -130,7 +134,7 @@ namespace EBOMCreationTool
                     if (column >= columnEnd) break;
                     getAllCellProperties(xlWorkSheet2.Cells[row, column], row, column);
                 }
-                Console.WriteLine("Finished reading row " + row);
+                mainframe.WriteToConsole("Finished reading row " + row);
             }
             bodyRowStart = bodyRows[0][0].rowIndex;
         }
@@ -204,5 +208,23 @@ namespace EBOMCreationTool
             }
             return tempCell;
         }        
+        public void ClosePorts()
+        {
+            try
+            {
+                //Marshal.FinalReleaseComObject(xlWorkSheet2);
+                //xlWorkBook2.Close();
+                //Marshal.FinalReleaseComObject(xlWorkBook2);
+                //xlWorkBooks2.Close();
+                //Marshal.FinalReleaseComObject(xlWorkBooks2);
+                //xlAppOpen.Quit();
+                //Marshal.FinalReleaseComObject(xlAppOpen); // excel objects don't releast comObjects to excel so you have to force it
+            }
+            finally
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }            
+        }
     }
 }

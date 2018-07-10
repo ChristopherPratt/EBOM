@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.IO;
 using System.Xml;
 using Microsoft.Office.Interop.Excel;
-using Microsoft.Office.Core;
-using System.Text.RegularExpressions;
+
 
 namespace EBOMCreationTool
 {
     class LoadXML
     {
+        bool end = false;
         List<string> properties;
         List<string> headers;
         List<string> propertyValues;
@@ -29,13 +22,17 @@ namespace EBOMCreationTool
         string apcbField = "";
 
         LoadTemplate template;
+        MainFrame mainframe;
 
         public int totalPartCount;
         public string xmlFile;
-        public LoadXML(LoadTemplate l, string XMLfile)
+        public LoadXML(MainFrame m, LoadTemplate l, string XMLfile)
         {
+            mainframe = m;
             xmlFile = XMLfile;
             template = l;
+            if (mainframe.end) return;
+
             properties = new List<string>();
             propertyValues = new List<string>();
             headers = new List<string>();
@@ -48,9 +45,17 @@ namespace EBOMCreationTool
         }
         public void openXML()
         {
+            if (mainframe.end) return;
             xmlRead = new XmlDocument();
             //xmlRead.Load(System.AppDomain.CurrentDomain.BaseDirectory + "altium.xml");
-            xmlRead.Load(@xmlFile);
+
+            try { xmlRead.Load(@xmlFile); }
+            catch (Exception e)
+            {
+                MessageBox.Show(".XML file is incorrect");
+                mainframe.end = true;
+
+            }
         }
         public string removeUnderscore(string text)
         {
@@ -67,6 +72,7 @@ namespace EBOMCreationTool
         }
         public void getHeaderTitles()
         {
+            if (mainframe.end) return;
             //Read the headers
             nodeList = xmlRead.SelectNodes("GRID")[0].SelectNodes("COLUMNS")[0].SelectNodes("COLUMN");
             if (nodeList.Count == 0)
@@ -78,15 +84,19 @@ namespace EBOMCreationTool
 
             foreach (XmlNode node in nodeList) //for every header loaded
             {
-                string nodeAttribute = node.Attributes.Item(1).Value;
+                // looking in the caption attribute of node
+                string nodeAttribute = Regex.Replace(node.Attributes.Item(1).Value, "[^a-zA-Z]", "").ToUpper();
                 for ( int a = 0; a < template.titleBlock.Count; a++)//get indexes for all the headers and the title block
                 {
-                    if (nodeAttribute.Equals(template.titleBlock[a].text))
+                    string titleCell = Regex.Replace(template.titleBlock[a].text, "[^a-zA-Z]", "").ToUpper(); // no spaces, symbols, or letters, all uppers
+                    if (nodeAttribute.Equals(titleCell))
                     { template.titleBlock[a].index = Convert.ToInt32(node.Attributes.Item(2).Value); continue; }
                 }
                 for (int a = 0; a < template.headerRow.Count; a++)
                 {
-                    if (nodeAttribute.Equals(template.headerRow[a].text))
+                    string headerCell = Regex.Replace(template.headerRow[a].text, "[^a-zA-Z]", "").ToUpper(); // no spaces, symbols, or letters, all uppers
+
+                    if (nodeAttribute.Equals(headerCell))
                     {
                         template.headerRow[a].index = Convert.ToInt32(node.Attributes.Item(2).Value);
                         continue;
@@ -98,6 +108,7 @@ namespace EBOMCreationTool
         }
         public void getPartInfo()
         {
+            if (mainframe.end) return;
             //Read the parts
             nodeList = xmlRead.SelectNodes("GRID")[0].SelectNodes("ROWS")[0].SelectNodes("ROW");
             if (nodeList.Count == 0)
@@ -128,11 +139,21 @@ namespace EBOMCreationTool
                 template.bodyRows.Add(body1);
                 for (int column = 0; column < template.headerRow.Count; column++)
                 {
+                    try
+                    {
+                        template.bodyRows[row][column].info = nodeList[row].Attributes[template.headerRow[column].index].Value;
+                        if (template.bodyRows[row][column].info.Contains("ProjectAdditionalNote") || template.bodyRows[row][column].info.Contains("Projectchangeindex")) template.bodyRows[row][column].info = "";
+                        if (template.bodyRows[row][column].info.Contains("APCB")) template.bodyRows[row][column].info = "PCB";
+                        template.bodyRows[row][column].rowIndex = rowIndex;
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\nThe program will now close.");
+                        template.ClosePorts();
+                        mainframe.end = true;
+                        return;
+                    }
 
-                    template.bodyRows[row][column].info = nodeList[row].Attributes[template.headerRow[column].index].Value;
-                    if (template.bodyRows[row][column].info.Contains("ProjectAdditionalNote") || template.bodyRows[row][column].info.Contains("Projectchangeindex")) template.bodyRows[row][column].info = "";
-                    if (template.bodyRows[row][column].info.Contains("APCB")) template.bodyRows[row][column].info = "PCB";
-                    template.bodyRows[row][column].rowIndex = rowIndex;
                 }
                 rowIndex++;
 
@@ -144,6 +165,7 @@ namespace EBOMCreationTool
 
         public void copyMyCellList(List<LoadTemplate.myCell> cellList, List<LoadTemplate.myCell> OldCellList)
         {
+            if (mainframe.end) return;
             for (int a = 0; a < OldCellList.Count; a++)
             {
                 cellList.Add(new LoadTemplate.myCell());
@@ -162,6 +184,7 @@ namespace EBOMCreationTool
         //contents of sortOrder {1, *column*, setorder, P,C,CN,L,R}
         public bool sorting(List<LoadTemplate.myCell> currentRow, List<LoadTemplate.myCell> comparedRow)
         {
+            if (end) return false;
             for (int a = 0; a < template.sortOrder.Count; a++)// for each sort found
             {
                 string currentCell = getCellText(currentRow, Convert.ToInt32(template.sortOrder[a][1])); // get actual text data from cell
@@ -366,6 +389,7 @@ namespace EBOMCreationTool
 
         public void sort()
         {
+            if (mainframe.end) return;
             bool matched = false;
             List<List<string>> newSortOrder = new List<List<string>>();
             for (int a = 0; a < template.sortOrder.Count; a++)

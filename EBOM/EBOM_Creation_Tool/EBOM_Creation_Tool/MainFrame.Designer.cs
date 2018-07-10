@@ -31,6 +31,7 @@
             this.bStart = new System.Windows.Forms.Button();
             this.bChooseXML = new System.Windows.Forms.Button();
             this.tbXML = new System.Windows.Forms.TextBox();
+            this.rtbConsole = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // bStart
@@ -63,18 +64,29 @@
             this.tbXML.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbXML.TextChanged += new System.EventHandler(this.tbXML_TextChanged);
             // 
+            // rtbConsole
+            // 
+            this.rtbConsole.Location = new System.Drawing.Point(15, 129);
+            this.rtbConsole.Name = "rtbConsole";
+            this.rtbConsole.Size = new System.Drawing.Size(592, 224);
+            this.rtbConsole.TabIndex = 10;
+            this.rtbConsole.Text = "";
+            this.rtbConsole.TextChanged += new System.EventHandler(this.rtbConsole_TextChanged);
+            // 
             // MainFrame
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
-            this.ClientSize = new System.Drawing.Size(619, 118);
+            this.ClientSize = new System.Drawing.Size(619, 365);
+            this.Controls.Add(this.rtbConsole);
             this.Controls.Add(this.tbXML);
             this.Controls.Add(this.bChooseXML);
             this.Controls.Add(this.bStart);
             this.DoubleBuffered = true;
             this.Name = "MainFrame";
             this.Text = "EBOM_Creation_Tool v1.3";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFrame_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -85,6 +97,7 @@
         private System.Windows.Forms.Button bStart;
         private System.Windows.Forms.Button bChooseXML;
         private System.Windows.Forms.TextBox tbXML;
+        private System.Windows.Forms.RichTextBox rtbConsole;
     }
 }
 

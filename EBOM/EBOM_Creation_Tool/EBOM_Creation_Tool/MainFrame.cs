@@ -5,7 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.Reflection;
 
@@ -16,6 +16,9 @@ namespace EBOMCreationTool
     
     public partial class MainFrame : Form
     {
+        public bool end = false;
+        Thread runParser;
+        delegate void dgetpMainFrame(Action job);
         DataSet dataSet;
         private List<string> MergedRowsInFirstColumn = new List<string>();
 
@@ -24,6 +27,33 @@ namespace EBOMCreationTool
             InitializeComponent();
             //dataGrid.Paint += new PaintEventHandler(dataGrid_Paint);
         }
+
+        public void getpMainFrame(Action job) // set the gui console to enabled depending on some conditions
+        {
+            try
+            {
+                if (this.rtbConsole.InvokeRequired)
+                {
+                    dgetpMainFrame d = new dgetpMainFrame(getpMainFrame);
+                    this.Invoke(d, new object[] { job });
+                }
+                else
+                {
+                    job();
+                }
+            }
+            catch (Exception e) { };
+        }
+
+        public void WriteToConsole(string text)
+        {
+            Action myACtion = () =>
+            {
+                rtbConsole.AppendText(text + "\n");
+            };
+            getpMainFrame(myACtion);
+        }
+
         //private void createDataTable()
         //{
         //    dataGrid.ColumnCount = 26;
@@ -36,14 +66,14 @@ namespace EBOMCreationTool
         //        dataGrid.Rows.Add(row);
         //    for (int a = 0; a < dataGrid.ColumnCount; a++)
         //        dataGrid.Rows[a].HeaderCell.Value = a.ToString() ;
-           
+
         //    dataGrid.DoubleBuffered(true);
-            
+
         //}
 
         private void dataGridView1_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
-            Console.WriteLine(e.ColumnIndex + " " + e.RowIndex);
+            WriteToConsole(e.ColumnIndex + " " + e.RowIndex);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -129,10 +159,25 @@ namespace EBOMCreationTool
             LoadTemplate t;
 
 
-
-            t = new LoadTemplate();
-            l = new LoadXML(t, tbXML.Text);
-            c = new CreateExcelFile(l, t);
+            runParser = new Thread(delegate ()
+            {
+                try
+                {
+                    t = new LoadTemplate(this);
+                    l = new LoadXML(this, t, tbXML.Text);
+                    c = new CreateExcelFile(this, l, t);
+                }
+                finally
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    if (end) System.Windows.Forms.Application.Exit();
+                }
+                
+            });
+            runParser.Name = "CreateEBOM";
+            runParser.Start();
+           
         }
 
         private void tbExport_TextChanged(object sender, EventArgs e)
@@ -149,6 +194,25 @@ namespace EBOMCreationTool
         private void tbXML_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void rtbConsole_TextChanged(object sender, EventArgs e)
+        {
+            rtbConsole.HideSelection = false;
+            rtbConsole.SelectionStart = rtbConsole.Text.Length;
+            rtbConsole.ScrollToCaret();
+        }
+
+        private void rtbConsole_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainFrame_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            end = true;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
     public static class ExtensionMethods

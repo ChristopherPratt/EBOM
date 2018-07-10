@@ -26,6 +26,7 @@ namespace EBOMCreationTool
         XmlNodeList nodeList;
         LoadXML XML;
         LoadTemplate template;
+        MainFrame mainframe;
 
         string ExportFileName;
 
@@ -34,10 +35,13 @@ namespace EBOMCreationTool
         Workbook xlWorkBook;
         Sheets xlWorkSheets;
         Worksheet xlWorkSheet;
-        public CreateExcelFile(LoadXML x, LoadTemplate t)
+        public CreateExcelFile(MainFrame m, LoadXML x, LoadTemplate t)
         {
+            
+            mainframe = m;
             XML = x;
             template = t;
+            if (mainframe.end) return;
             try
             {
                 //Start the Microsoft Excel Application
@@ -72,7 +76,7 @@ namespace EBOMCreationTool
                         xlWorkSheet.Cells[a, b].Interior.Color = 16777215;
                     }
                 }
-                Console.WriteLine("Finished writing Title Block");
+                mainframe.WriteToConsole("Finished writing Title Block");
 
                 for (int a = 0; a < XML.sorted.Count; a++)
                 {
@@ -97,9 +101,9 @@ namespace EBOMCreationTool
                 foreach (List<LoadTemplate.myCell> cellRows in XML.sorted)
                 {        
                     foreach(LoadTemplate.myCell cell in cellRows) writeData(cell);
-                    Console.WriteLine("Finished writing row: " + ++c);
+                    mainframe.WriteToConsole("Finished writing row: " + ++c);
                 }
-                Console.WriteLine("Total Part Count: " + XML.totalPartCount);
+                mainframe.WriteToConsole("Total Part Count: " + XML.totalPartCount);
                 if (c != XML.totalPartCount) MessageBox.Show("WARNING!\nNot all parts exported to BOM from xml.");
                 //xlWorkBook.SaveAs(System.AppDomain.CurrentDomain.BaseDirectory + "New EBOM1 " + template.time + ".xlsx");
                 bool excelFileIsOpen = false;
@@ -123,9 +127,8 @@ namespace EBOMCreationTool
             }
             finally
             {
-                Console.WriteLine("Finished Saving Excel File");
-                Marshal.FinalReleaseComObject(xlWorkSheet);
-                //Marshal.FinalReleaseComObject(xlWorkSheets);
+                mainframe.WriteToConsole("Finished Saving Excel File");
+                Marshal.FinalReleaseComObject(xlWorkSheet);                
                 xlWorkBook.Close();
                 Marshal.FinalReleaseComObject(xlWorkBook);
                 xlWorkBooks.Close();
