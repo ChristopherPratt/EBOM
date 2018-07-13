@@ -29,7 +29,7 @@ namespace EBOMCreationTool
             public int columnIndex { get; set; }
             public string info { get; set; }
             public string text { get; set; }
-            public int index  { get; set; }
+            public int index { get; set; }
             public double color { get; set; }
 
             public XlLineStyle topLineStyle { get; set; }
@@ -50,15 +50,17 @@ namespace EBOMCreationTool
         public List<List<myCell>> bodyRows;
         public List<double> bodyColors;
         public List<List<string>> sortOrder;
+        public List<string> footerList;
+        public int footerColor;
         public int columnEnd = 1000;
         public int rowEnd = 1000;
 
         public List<List<int>> mergedArea;
         public string time;
-        public Microsoft.Office.Interop.Excel.Application xlAppOpen;
-        public Workbooks xlWorkBooks2;
-        public Workbook xlWorkBook2;
-        public Worksheet xlWorkSheet2;
+        public Microsoft.Office.Interop.Excel.Application xlApp;
+        public Workbooks xlWorkBooks;
+        public Workbook xlWorkBook;
+        public Worksheet xlWorkSheet;
         public string templateFileName;
         public LoadTemplate(MainFrame m)
         {
@@ -70,10 +72,12 @@ namespace EBOMCreationTool
             bodyRows = new List<List<myCell>>();
             bodyColors = new List<double>();
             group = new List<int>();
+            footerList = new List<string>();
 
-                //copyExcelFile();
-                readExcelFile(1000, 1000); // choosing unthinkably huge number since i want to be able to cover any size template
-                            // breaks in the loops that use those numbers prevent inefficiency.
+
+            //copyExcelFile();
+            readExcelFile(1000, 1000); // choosing unthinkably huge number since i want to be able to cover any size template
+                                       // breaks in the loops that use those numbers prevent inefficiency.
 
         }
         private string getTime()
@@ -96,19 +100,19 @@ namespace EBOMCreationTool
                 {
                     throw new Exception("Excel template not found in " + excelTemplate);
                 }
-                xlAppOpen = new Microsoft.Office.Interop.Excel.Application();
-                xlWorkBooks2 = xlAppOpen.Workbooks;
+                xlApp = new Microsoft.Office.Interop.Excel.Application();
+                xlWorkBooks = xlApp.Workbooks;
                 try
                 {
-                    xlWorkBook2 = xlWorkBooks2.Open(excelTemplate, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
+                    xlWorkBook = xlWorkBooks.Open(excelTemplate, 0, false, 5, "", "", false, XlPlatform.xlWindows, "", true, false, 0, true, false, false); //open the template file!
                 }
                 catch (Exception e)
                 {
                     MessageBox.Show("template file is not spelled correctly or is not in the same directory as EBOMCreationTool.exe");
-                    mainframe.end = true;                    
+                    mainframe.end = true;
                     return;
                 }
-                xlWorkSheet2 = (Worksheet)xlWorkBook2.Worksheets.get_Item(1); //worksheet to write data to
+                xlWorkSheet = (Worksheet)xlWorkBook.Worksheets.get_Item(1); //worksheet to write data to
 
                 getCells(totalRows, totalColumns);
 
@@ -132,7 +136,7 @@ namespace EBOMCreationTool
                 for (int column = 1; column < totalColumns + 1; column++) // the plus one is because the excel columns and rows start at 1
                 {
                     if (column >= columnEnd) break;
-                    getAllCellProperties(xlWorkSheet2.Cells[row, column], row, column);
+                    getAllCellProperties(xlWorkSheet.Cells[row, column], row, column);
                 }
                 mainframe.WriteToConsole("Finished reading row " + row);
             }
@@ -142,10 +146,10 @@ namespace EBOMCreationTool
         public int currentRow = 0;
         public myCell getAllCellProperties(Range cell, int row, int column)
         {
-            myCell tempCell = new myCell();            
+            myCell tempCell = new myCell();
             bool matched = false;
             tempCell.rowIndex = row;
-            tempCell.columnIndex = column;           
+            tempCell.columnIndex = column;
             tempCell.text = cell[1, 1].Text;
             tempCell.color = cell[1, 1].Interior.Color;
             tempCell.rightLineStyle = (XlLineStyle)cell[1, 1].Borders(XlBordersIndex.xlEdgeRight).LineStyle; // ignoring top border because it would overwrite header
@@ -183,18 +187,23 @@ namespace EBOMCreationTool
                     sortOrder.Add(new List<string>());
                     string[] tempDelimiter = sortInfo[a].Split(')')[1].Split(',');
                     sortOrder[sortOrder.Count - 1].Add(sortInfo[a].Split(')')[0]);
-                    sortOrder[sortOrder.Count - 1].Add((column-1).ToString());
+                    sortOrder[sortOrder.Count - 1].Add((column - 1).ToString());
                     foreach (string tempString in tempDelimiter) sortOrder[sortOrder.Count - 1].Add(tempString); // should make above cell entry into { {1, *column* , *sortType* P,C,CN,L,R} , {4, *column*, incrementing} }
                 }
                 return tempCell;
             }
+            else if (tempCell.text.Contains("[Footer]"))
+            {
+                footerColor = (int)tempCell.color;
+                footerList.Add(tempCell.text.Split(']')[1]);
+            }
             else if (tempCell.text.Contains("[Group]"))
             {
-                group.Add(column-1);
+                group.Add(column - 1);
             }
             else if (tempCell.text.Contains("[Quantity]"))
             {
-                quantity = column-1;
+                quantity = column - 1;
             }
             else if (tempCell.text.Contains("[EndRow]"))
             {
@@ -207,24 +216,24 @@ namespace EBOMCreationTool
                 return tempCell;
             }
             return tempCell;
-        }        
+        }
         public void ClosePorts()
         {
             try
             {
-                //Marshal.FinalReleaseComObject(xlWorkSheet2);
-                //xlWorkBook2.Close();
-                //Marshal.FinalReleaseComObject(xlWorkBook2);
-                //xlWorkBooks2.Close();
-                //Marshal.FinalReleaseComObject(xlWorkBooks2);
-                //xlAppOpen.Quit();
-                //Marshal.FinalReleaseComObject(xlAppOpen); // excel objects don't releast comObjects to excel so you have to force it
+                //Marshal.FinalReleaseComObject(xlWorkSheet);
+                //xlWorkBook.Close();
+                //Marshal.FinalReleaseComObject(xlWorkBook);
+                //xlWorkBooks.Close();
+                //Marshal.FinalReleaseComObject(xlWorkBooks);
+                //xlApp.Quit();
+                //Marshal.FinalReleaseComObject(xlApp); // excel objects don't releast comObjects to excel so you have to force it
             }
             finally
             {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-            }            
+            }
         }
     }
 }

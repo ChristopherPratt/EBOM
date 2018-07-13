@@ -85,7 +85,7 @@
             this.Controls.Add(this.bStart);
             this.DoubleBuffered = true;
             this.Name = "MainFrame";
-            this.Text = "EBOM_Creation_Tool v1.4";
+            this.Text = "EBOM_Creation_Tool_v1.7";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFrame_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);

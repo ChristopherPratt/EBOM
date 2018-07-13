@@ -21,11 +21,14 @@ namespace EBOMCreationTool
         delegate void dgetpMainFrame(Action job);
         DataSet dataSet;
         private List<string> MergedRowsInFirstColumn = new List<string>();
+        public string[] filePaths;
 
-        public MainFrame()
+        public MainFrame(string[] filepaths)
         {
+            filePaths = filepaths;
             InitializeComponent();
             //dataGrid.Paint += new PaintEventHandler(dataGrid_Paint);
+           
         }
 
         public void getpMainFrame(Action job) // set the gui console to enabled depending on some conditions
@@ -78,6 +81,56 @@ namespace EBOMCreationTool
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            if (filePaths.Length > 0)
+            {
+                bStart.Enabled = false;
+                bChooseXML.Enabled = false;
+                foreach (string file in filePaths)
+                {
+                    string[] fileTemp = file.Split('.');
+                    if (fileTemp.Length > 1)
+                    {
+                        if (!fileTemp[fileTemp.Length - 1].ToLower().Equals("xml"))
+                        {
+                            MessageBox.Show("File selected is not a .XML");
+                            System.Windows.Forms.Application.Exit(); return;
+
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("File selected is not a .XML");
+                        System.Windows.Forms.Application.Exit(); return;
+                    }
+                    tbXML.Text = file;
+                    CreateExcelFile c;
+                    LoadXML l;
+                    LoadTemplate t;
+
+
+                    runParser = new Thread(delegate ()
+                    {
+                        try
+                        {
+                            t = new LoadTemplate(this);
+                            l = new LoadXML(this, t, tbXML.Text);
+                            c = new CreateExcelFile(this, l, t);
+                        }
+                        finally
+                        {
+                            GC.Collect();
+                            GC.WaitForPendingFinalizers();
+                            string[] temp = file.Split('\\');
+                            WriteToConsole("EBOM created using " + temp[temp.Length - 1]); Thread.Sleep(1500);
+                            System.Windows.Forms.Application.Exit();
+
+                        }
+
+                    });
+                    runParser.Name = "CreateEBOM";
+                    runParser.Start();
+                }
+            }
             //createDataTable();
             //dataGrid.Dock = DockStyle.Top;
             //this.dataGrid.Paint += new PaintEventHandler(dataGrid_Paint);
@@ -154,6 +207,27 @@ namespace EBOMCreationTool
         }
         private void bStart_Click(object sender, EventArgs e)
         {
+
+            string[] fileTemp = tbXML.Text.Split('.');
+            if (fileTemp.Length > 1)
+            {
+                if (!fileTemp[fileTemp.Length - 1].ToLower().Equals("xml"))
+                {
+                    MessageBox.Show("File selected is not a .XML");
+                    System.Windows.Forms.Application.Exit(); return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("File selected is not a .XML");
+                System.Windows.Forms.Application.Exit(); return;
+            }
+
+
+
+            bStart.Enabled = false;
+            bChooseXML.Enabled = false;
+
             CreateExcelFile c;
             LoadXML l;
             LoadTemplate t;
@@ -213,6 +287,11 @@ namespace EBOMCreationTool
             end = true;
             GC.Collect();
             GC.WaitForPendingFinalizers();
+        }
+
+        private void bShortcut_Click(object sender, EventArgs e)
+        {
+
         }
     }
     public static class ExtensionMethods

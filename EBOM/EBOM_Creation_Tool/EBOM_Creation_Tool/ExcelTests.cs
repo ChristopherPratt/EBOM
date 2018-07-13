@@ -230,7 +230,7 @@ namespace EBOMCreationTool
                     xlWorkSheet.Rows[allCells[0, column].rowIndex].RowHeight = allCells[0, column].height; // sets cell height for just the 1st row
                     xlWorkSheet.Columns[column + 1].ColumnWidth = allCells[0, column].width; // sets cell width for every column
                 }
-                Console.WriteLine("Finished writing top border");
+                //WriteToConsole("Finished writing top border");
 
                 for (int row = 1; row < totalRows; row++)
                 {

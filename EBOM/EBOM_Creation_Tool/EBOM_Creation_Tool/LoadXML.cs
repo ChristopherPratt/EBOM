@@ -123,9 +123,17 @@ namespace EBOMCreationTool
             
             for (int a = 0; a < template.titleBlock.Count; a++)
             {
-                 
-                template.titleBlock[a].info = nodeList[0].Attributes[template.titleBlock[a].index].Value;
-                if (template.titleBlock[a].info.Contains("ProjectAdditionalNote")) template.titleBlock[a].info = "";
+                try
+                {
+                    template.titleBlock[a].info = nodeList[0].Attributes[template.titleBlock[a].index].Value;
+                    if (template.titleBlock[a].info.Contains("ProjectAdditionalNote")) template.titleBlock[a].info = "";
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\nThe program will now close.");
+                    mainframe.end = true;
+                    return;
+                }                
             }
             int rowIndex = template.bodyRows[0][0].rowIndex;
             List<LoadTemplate.myCell> body1Default = template.bodyRows[0];
@@ -148,8 +156,7 @@ namespace EBOMCreationTool
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\nThe program will now close.");
-                        template.ClosePorts();
+                        MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\nThe program will now close.");                        
                         mainframe.end = true;
                         return;
                     }
@@ -428,12 +435,12 @@ namespace EBOMCreationTool
             // we also set the quantity of similar parts for the top part based on how many of them there are and leave the other quantity cells blank.
             int bodyStart = template.bodyRowStart;
             int count = 1;
-            foreach (LoadTemplate.myCell tempMycell in sorted[0]) tempMycell.rowIndex = template.bodyRowStart; // loop through all cells in a row and change each cells row index to what it should be
-            template.bodyRowStart++;// because we are starting with the second element in the body rows we need to increment the start of the body row index by 1
+            foreach (LoadTemplate.myCell tempMycell in sorted[0]) tempMycell.rowIndex = bodyStart; // loop through all cells in a row and change each cells row index to what it should be
+            bodyStart++;// because we are starting with the second element in the body rows we need to increment the start of the body row index by 1
             for (int a = 1; a < sorted.Count; a++) // loop through all rows
             {
-                foreach (LoadTemplate.myCell tempMycell in sorted[a]) tempMycell.rowIndex = template.bodyRowStart; // loop through all cells in a row and change each cells row index to what it should be
-                template.bodyRowStart++; // incredment the row index after all cells are updated
+                foreach (LoadTemplate.myCell tempMycell in sorted[a]) tempMycell.rowIndex = bodyStart; // loop through all cells in a row and change each cells row index to what it should be
+                bodyStart++; // incredment the row index after all cells are updated
                 if (updateQuantity)
                 {
                     sorted[a][template.quantity].info = ""; // change all rows quantity cell to blank
