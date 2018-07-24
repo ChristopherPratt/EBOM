@@ -222,6 +222,7 @@ namespace EBOMCreationTool
             }
             mainframe.WriteToConsole("Total Part Count: " + XML.totalPartCount);
             if (c != XML.totalPartCount) MessageBox.Show("WARNING!\nNot all parts exported to BOM from xml.");
+            template.xlWorkSheet.Columns.AutoFit(); // autofit all columns in the sheet.
         }
 
         private void writeFooterInfo()

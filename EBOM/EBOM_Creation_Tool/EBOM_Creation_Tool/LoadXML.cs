@@ -90,7 +90,7 @@ namespace EBOMCreationTool
                 {
                     string titleCell = Regex.Replace(template.titleBlock[a].text, "[^a-zA-Z]", "").ToUpper(); // no spaces, symbols, or letters, all uppers
                     if (nodeAttribute.Equals(titleCell))
-                    { template.titleBlock[a].index = Convert.ToInt32(node.Attributes.Item(2).Value); continue; }
+                    { template.titleBlock[a].index = Convert.ToInt32(node.Attributes.Item(5).Value); continue; }
                 }
                 for (int a = 0; a < template.headerRow.Count; a++)
                 {
@@ -98,7 +98,7 @@ namespace EBOMCreationTool
 
                     if (nodeAttribute.Equals(headerCell))
                     {
-                        template.headerRow[a].index = Convert.ToInt32(node.Attributes.Item(2).Value);
+                        template.headerRow[a].index = Convert.ToInt32(node.Attributes.Item(5).Value);
                         continue;
                     }
                 }
@@ -130,7 +130,7 @@ namespace EBOMCreationTool
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\nThe program will now close.");
+                    MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\n The .XML file must be remade.\nThe program will now close.");
                     mainframe.end = true;
                     return;
                 }                
@@ -156,7 +156,7 @@ namespace EBOMCreationTool
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\nThe program will now close.");                        
+                        MessageBox.Show("The Index of an attribute in the .XML is greater than the total amount of attributes.\n The .XML file must be remade.\nThe program will now close.");                        
                         mainframe.end = true;
                         return;
                     }

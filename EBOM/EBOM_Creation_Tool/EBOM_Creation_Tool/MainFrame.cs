@@ -246,6 +246,12 @@ namespace EBOMCreationTool
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     if (end) System.Windows.Forms.Application.Exit();
+                    Action myACtion = () =>
+                    {
+                        bStart.Enabled = true;
+                        bChooseXML.Enabled = true;
+                    };
+                    getpMainFrame(myACtion);
                 }
                 
             });
