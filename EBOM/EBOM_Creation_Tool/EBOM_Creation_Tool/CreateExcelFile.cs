@@ -223,6 +223,10 @@ namespace EBOMCreationTool
             mainframe.WriteToConsole("Total Part Count: " + XML.totalPartCount);
             if (c != XML.totalPartCount) MessageBox.Show("WARNING!\nNot all parts exported to BOM from xml.");
             template.xlWorkSheet.Columns.AutoFit(); // autofit all columns in the sheet.
+            for (int a = 1; a < template.columnEnd; a++)
+            {
+                template.xlWorkSheet.Cells[1, a].ColumnWidth = template.xlWorkSheet.Cells[1, a].ColumnWidth + 3;
+            }
         }
 
         private void writeFooterInfo()
@@ -248,7 +252,7 @@ namespace EBOMCreationTool
         public void writeData(LoadTemplate.myCell cell)
         {
 
-            template.xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex] = cell.info;
+            template.xlWorkSheet.Cells[cell.rowIndex, cell.columnIndex].Value = cell.info;
         }
 
         private void saveExcelFile()

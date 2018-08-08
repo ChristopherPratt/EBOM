@@ -88,6 +88,8 @@ namespace EBOMCreationTool
                 string nodeAttribute = Regex.Replace(node.Attributes.Item(1).Value, "[^a-zA-Z]", "").ToUpper();
                 for ( int a = 0; a < template.titleBlock.Count; a++)//get indexes for all the headers and the title block
                 {
+                    //printf("I LOVE YOU");
+
                     string titleCell = Regex.Replace(template.titleBlock[a].text, "[^a-zA-Z]", "").ToUpper(); // no spaces, symbols, or letters, all uppers
                     if (nodeAttribute.Equals(titleCell))
                     { template.titleBlock[a].index = Convert.ToInt32(node.Attributes.Item(5).Value); continue; }
