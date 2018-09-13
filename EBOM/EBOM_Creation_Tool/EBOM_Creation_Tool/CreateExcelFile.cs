@@ -160,12 +160,7 @@ namespace EBOMCreationTool
 
         private void setupExcel()
         {
-            //Start the Microsoft Excel Application
-            //string excelTemplate = System.AppDomain.CurrentDomain.BaseDirectory + "template.xlsx";
             ExportFileName = System.IO.Path.ChangeExtension(XML.xmlFile, null) + ".xlsx";
-
-
-            
         }
         private void cleanUpTemplateArtifacts()
         {
