@@ -14,9 +14,17 @@ namespace EBOM_Creation_Tool_v2
         [STAThread]
         static void Main(string[] args)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new mainFrameScreen(args));
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new mainFrameScreen(args));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+
         }
     }
 }

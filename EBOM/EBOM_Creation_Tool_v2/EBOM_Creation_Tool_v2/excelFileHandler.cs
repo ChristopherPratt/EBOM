@@ -23,11 +23,14 @@ namespace EBOM_Creation_Tool_v2
 
 
 
-        public excelFileHandler(mainFrame m, ref excelSection template1, ref sort sort1, ref countParts countparts1)
+        public excelFileHandler(mainFrame m)
         {
-            mainFrame1 = m;
+            mainFrame1 = m;            
+        }
+        public void run(ref excelSection template1, ref sort sort1, ref countParts countparts1)
+        {
             openTemplateFile(ref xlApp, ref xlWorkBooks, ref xlWorkBook, ref xlWorkSheet);
-            readTemplateFile(ref xlWorkSheet, totalRows, totalColumns, ref template1, ref sort1, ref countparts1, mainFrame1);
+            readTemplateFile(ref xlWorkSheet, totalRows, totalColumns, ref template1, ref sort1, ref countparts1, mainFrame1);        
         }
         private void openTemplateFile(ref Microsoft.Office.Interop.Excel.Application xlApp1, ref Workbooks xlWorkBooks1, ref Workbook xlWorkBook1, ref Worksheet xlWorkSheet1)
         {
@@ -61,6 +64,7 @@ namespace EBOM_Creation_Tool_v2
             
             for (int row = 1; row < totalRows1; row++)
             {
+                if (mainFrame.end) throw new Exception("User is closing the program");
                 for (int column = 1; column < totalColumns1; column++)
                 {
                     excelFileParser1.parseCell(xlWorkSheet.Cells[row, column], row, column, ref totalRows1, ref totalColumns1, ref template2, ref sort2, ref countParts2);

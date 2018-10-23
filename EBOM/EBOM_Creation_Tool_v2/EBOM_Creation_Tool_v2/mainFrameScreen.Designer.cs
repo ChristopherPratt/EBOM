@@ -82,6 +82,7 @@
             this.Controls.Add(this.bChooseSource);
             this.Name = "mainFrameScreen";
             this.Text = "EBOM Creation Tool v2.0";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainFrameScreen_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

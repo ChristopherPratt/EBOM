@@ -23,7 +23,7 @@ namespace EBOM_Creation_Tool_v2
             customSort = new List<List<string>>();
 
         }
-        public void start(mainFrame mainFrame1, sort sort1, List<List<string>> unsorted, List<string> headers, countParts countParts1 )
+        public void start(mainFrame mainFrame1, sort sort1, List<List<string>> unsorted, List<string> headers, List<int> headerIndex, countParts countParts1 )
         {
             sortTheSortList();
             sorted = new List<List<string>>();
@@ -40,7 +40,7 @@ namespace EBOM_Creation_Tool_v2
                 if (!insertHere) sorted.Add(unsorted[a]);
             }
             mainFrame1.writeToConsole("finished sorting components.");
-            countParts1.updateQuantity(countParts1.quantityColumn, countParts1.groupedColumns, ref sorted);
+            countParts1.updateQuantity(countParts1.quantityColumn, countParts1.groupedColumns, headerIndex[0], ref sorted);
             mainFrame1.writeToConsole("finished updating quantities.");
         }
         private void insertRow(List<string> newRow, int index, ref List<List<string>> sorted)
@@ -76,21 +76,20 @@ namespace EBOM_Creation_Tool_v2
                             break;
                         }
                 }
-                switch (result)
-                {
-                    case -1: //unsorted row belongs before sorted row
-                        {
-                            return true;
-                        }
-                    case 0: //unsorted cell matched sorted cell - continue testing same row
-                        {
-                            continue;
-                        }
-                    case 1: //unsorted row belongs after sorted row
-                        {
-                            return false;
-                        }
-                }
+
+                if (result < 0) //unsorted row belongs before sorted row
+                    {
+                        return true;
+                    }
+                else if(result == 0) //unsorted cell matched sorted cell - continue testing same row
+                    {
+                        continue;
+                    }
+                else if(result > 0) //unsorted row belongs after sorted row
+                    {
+                        return false;
+                    }
+                
             }
             return false;
         }
@@ -193,7 +192,7 @@ namespace EBOM_Creation_Tool_v2
             int currentMaxElement = 0;
             int currentMax = 0;
             int currentCompare = 0;
-            for (int a = 3; a < sort.Count; a++) // for each sort level
+            for (int a = 0; a < sort.Count; a++) // for each sort level
             {
                 currentCompare = 0;
                 for (int b = 0; b < sort[a].Length; b++) // for each character of a sort
@@ -221,7 +220,7 @@ namespace EBOM_Creation_Tool_v2
             int currentMaxElement = 0;
             int currentMax = 0;
             int currentCompare = 0;
-            for (int a = 3; a < sort.Count; a++) // for each sort level
+            for (int a = 0; a < sort.Count; a++) // for each sort level
             {
                 for (int b = 0; b < sort[a].Length; b++) // for each character of a sort
                 {
@@ -250,11 +249,11 @@ namespace EBOM_Creation_Tool_v2
             List<string>  tempType = new List<string>();
             List<List<string>>  tempCustomSort = new List<List<string>>();
 
-            for (int a = 0; a < priority.Count; a++)
+            for (int a = 1; a < priority.Count+1; a++)
             {
-                for (int b = 1; b < priority.Count; b++)
+                for (int b = 0; b < priority.Count; b++)
                 {
-                    if (priority[b].Equals(a+1))
+                    if (priority[b].Equals(a))
                     {
                         tempPriority.Add(priority[b]);
                         tempColumn.Add(column[b]);

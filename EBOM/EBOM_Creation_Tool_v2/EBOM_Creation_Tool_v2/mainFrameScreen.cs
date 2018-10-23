@@ -20,9 +20,9 @@ namespace EBOM_Creation_Tool_v2
             mainFrame1 = new mainFrame(this, args);
             InitializeComponent();
 
+            bStart.Enabled = false;
             if (args.Length > 0)
-            {
-                bStart.Enabled = false;
+            {                    
                 bChooseSource.Enabled = false;
             }
         }
@@ -46,7 +46,19 @@ namespace EBOM_Creation_Tool_v2
 
         public void enableStartButton(bool set)
         {
-            bStart.Enabled = set;
+            Action myACtion = () =>
+            {
+                bStart.Enabled = set;
+            };
+            getScreen(myACtion);
+        }
+        public void enableSourceButton(bool set)
+        {
+            Action myACtion = () =>
+            {
+                bChooseSource.Enabled = set;
+            };
+            getScreen(myACtion);
         }
 
         private void bChooseSource_Click(object sender, EventArgs e)
@@ -66,6 +78,8 @@ namespace EBOM_Creation_Tool_v2
         private void bStart_Click(object sender, EventArgs e)
         {
             mainFrame1.start();
+            enableStartButton(false);
+            enableSourceButton(false);
         }
 
         public void writeToConsole(string text)
@@ -77,44 +91,25 @@ namespace EBOM_Creation_Tool_v2
             getScreen(myACtion);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        public void changeFormColor(bool result)
         {
-            try
+            Action myACtion = () =>
             {
-                test();
-                MessageBox.Show("test");
-            }
-            catch
-            {
-                MessageBox.Show(".XML file is incorrect");
-            }
-            
-        }
-        private void test()
+                if (result)
+                {
+                    ActiveForm.BackColor = Color.Green;
+                }
+                else
+                {
+                    ActiveForm.BackColor = Color.Red;
+                }
+            };
+            getScreen(myACtion);           
+        }       
+
+        private void mainFrameScreen_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try
-            {
-                test2();
-                MessageBox.Show("test2");
-            }
-            catch
-            {
-                MessageBox.Show("test2 catch");
-                throw new System.InvalidOperationException("The Index of an attribute in the .XML is greater than the total amount of attributes");
-
-
-            }
-
-        }
-        private void test2()
-        {
-            test3();
-            MessageBox.Show("test3");
-        }
-        private void test3()
-        {
-            throw new System.InvalidOperationException("The Index of an attribute in the .XML is greater than the total amount of attributes"); 
-
+            mainFrame1.terminateThread();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace EBOM_Creation_Tool_v2
         public string exportFileName;
 
 
-        public xmlFileHandler(mainFrame mainFrame1, excelSection excelSection1, string filePath)
+        public xmlFileHandler(mainFrame mainFrame1, excelSection excelSection1,  string filePath)
         {
             try
             {                
@@ -41,7 +41,7 @@ namespace EBOM_Creation_Tool_v2
                 readHeaderAttributes(partAttributesNodeList, xmlFileParser1, excelSection1.TBtext, ref TBindex); 
                 readHeaderAttributes(partAttributesNodeList, xmlFileParser1, excelSection1.Htext, ref Hindex); 
                 readComponents(componentNodeList, xmlFileParser1, TBindex, Hindex, ref titleBlockInfo, ref componentAttributes, ref totalPartCount);
-                setupExcel(filePath);
+                setupExcel( filePath);
                 mainFrame1.writeToConsole("Finished reading xml file.");
             }
             catch (Exception e)
@@ -82,7 +82,7 @@ namespace EBOM_Creation_Tool_v2
             xmlFileParser2.getTitleBlockInfo(nodeList[0], TBindex, ref titleBlockInfo1);
             totalPartCount1 =  xmlFileParser2.getComponentInfo(nodeList, Hindex, ref componentsAttributes1);
         }
-        private void setupExcel(string xmlFile)
+        private void setupExcel( string xmlFile)
         {
             exportFileName = System.IO.Path.ChangeExtension(xmlFile, null) + ".xlsx";
         }
