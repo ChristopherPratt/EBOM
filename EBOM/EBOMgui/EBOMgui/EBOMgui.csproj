@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="dgvInfo.cs" />
     <Compile Include="MainFrame.cs" />
     <Compile Include="MainFrameScreen.cs">
       <SubType>Form</SubType>

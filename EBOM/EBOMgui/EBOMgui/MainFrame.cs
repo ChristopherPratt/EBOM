@@ -17,7 +17,14 @@ namespace EBOMgui
         List<string> attributeNames;
         List<List<string>> componentContent;
 
-        bool rightMouseDown = false, leftMouseDown = false;
+        int prevRow, prevColumn;
+        string prevText;
+        bool prevHeader;
+        Color prevColorAttribute, prevColorComponent, prevColorTitle;
+
+        dgvInfo prevCellInfo,dragInfo; // for use in dragging a cell set around and having the cells your are dragging over return to their previous settings.
+
+        public bool dgvMouseDown = false, leftMouseDown = false, dragTrue = false;
 
         public bool headerType = true;
         xmlFileHandler xmlFileHandler1;
@@ -25,6 +32,7 @@ namespace EBOMgui
         public MainFrame(mainFrameScreen m)
         {
             mainFrameScreen1 = m;
+            prevCellInfo = new dgvInfo();
         }
         public void insertAttribute()
         {
@@ -68,20 +76,65 @@ namespace EBOMgui
             }
         }
 
-        public void paintCells(bool header, int row, int column, string text)
+        public void paintCells(bool header1, int row1, int column1, string text1, bool newPaint)
         {
-            mainFrameScreen1.dgvEBOM_ChangeColor(Color.Green, row, column);
-            mainFrameScreen1.dgvEBOM_setText(text, row, column);
-            if (header)
+            if (!newPaint)
             {
-                for (int a = row; a < row + 10; a++)
+                setCellInfo(prevCellInfo.rows, prevCellInfo.columns, prevCellInfo.colors, prevCellInfo.text);
+            }
+            paint(header1, row1, column1, text1, Color.Green, Color.Yellow, Color.Orange);
+
+            void paint(bool header, int row, int column, string text, Color attribute, Color title, Color component)
+            {
+                
+                mainFrameScreen1.dgvEBOM_ChangeColor(attribute, row, column);
+                mainFrameScreen1.dgvEBOM_setText(text, row, column);
+                if (header)
                 {
-                    mainFrameScreen1.dgvEBOM_ChangeColor(Color.Yellow, a, column);
+                    getCellInfo(row, row + 10, column, column);
+                    for (int a = row + 1; a < row + 11; a++)
+                    {
+                        mainFrameScreen1.dgvEBOM_ChangeColor(component, a, column);
+                    }
+                }
+                else
+                {
+                    getCellInfo(row, row, column, column + 1);
+                    mainFrameScreen1.dgvEBOM_ChangeColor(title, row, column + 1);
                 }
             }
-            else
+            
+        }
+
+        public void setCellsInDGVEBOM()
+        {
+
+        }
+
+        // gets all cell info for a range of rows and columns and saves it to the dgvInfo object
+        //usually used for when a user is dragging a value over the grid and needs to replace the contents of cells as the mouse passes over a cell section
+        public void setCellInfo (List<int> rows, List<int> columns, List<Color> colors, List<string> text)
+        {
+            for (int a = 0; a < rows.Count; a++)
             {
-                mainFrameScreen1.dgvEBOM_ChangeColor(Color.Orange, row, column+1);
+                mainFrameScreen1.dgvEBOM_ChangeColor(colors[a], rows[a], columns[a]);
+                mainFrameScreen1.dgvEBOM_setText(text[a], rows[a], columns[a]);
+            }
+        }
+        public void getCellInfo (int begRow, int endRow, int begColumn, int endColumn)
+        {
+            prevCellInfo = new dgvInfo();
+            string tempText = ""; Color tempColor = Color.Red;
+            for (int a = begRow; a < endRow + 1; a++)
+            {
+                for (int b = begColumn; b < endColumn + 1; b++)
+                {
+                    mainFrameScreen1.getdgvEBOMCellInfo(ref tempText, ref tempColor, a, b);
+                    prevCellInfo.colors.Add(tempColor);
+                    prevCellInfo.text.Add(tempText);
+                    prevCellInfo.rows.Add(a);
+                    prevCellInfo.columns.Add(b);
+                }
             }
         }
 
@@ -90,21 +143,99 @@ namespace EBOMgui
 
         }
 
+        
+
         public bool determineDrag()
         {
             int count = 0;
-            while (mainFrameScreen1.lbMouseDown)
+            while (dgvMouseDown)
             {
-                Thread.Sleep(75);
-                if (count++ == 2) return true;
+                Thread.Sleep(10);
+                if (count++ == 20)
+                {
+                    return true;
+                }
             }
             return false;
         }
 
+        public int checkIfCellIsOccupied(int currentRow, int currentColumn)
+        {
+            if (attributeRows != null)            
+                for (int a = 0; a < attributeRows.Count; a++)
+                    if (attributeRows[a] == currentRow)
+                        if (attributeColumn[a] == currentColumn)
+                            return a;            
+            return -1; // return -1 if it doesn't match existing column
+        }
+
         public void mouseDownEvent(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right) rightMouseDown = true;
+            if (e.Button == MouseButtons.Right) dgvMouseDown = true;
             else if (e.Button == MouseButtons.Left) leftMouseDown = true;
+        }
+
+        public void dgvEBOM_CellMouseEnter(int row, int column)
+        {
+            if (dragTrue)
+            {
+                paintCells(headerType, row, column, prevText, false);
+            }
+        }
+
+        public void dgvDragEvent(int row, int column)
+        {
+            dgvMouseDown = true;
+            Thread run = new Thread(delegate ()
+            {
+                if (determineDrag())
+                {
+                    dragTrue = true;
+                }
+            })
+            {
+                Name = "drag"
+            };
+            run.Start();
+            int index = checkIfCellIsOccupied(row, column);
+            if (index < 0) dragTrue = false;
+            else
+            {
+                mainFrameScreen1.clearlbAttribute();
+                generateDragList(row, column, index);
+                paintCells(headerType, row, column, attributeNames[index], true);
+            }
+
+        }
+        //creates a list of all the cells we need for dragging around a section of cells to decide where we want something.
+        public void generateDragList(int row, int column, int index)
+        {
+            dragInfo = new dgvInfo();
+            dragInfo.text.Add(attributeNames[index]);
+            dragInfo.rows.Add(row);
+            dragInfo.columns.Add(column);
+            dragInfo.colors.Add(Color.Green);
+            if (headerType)
+            {
+                for (int a = row + 1; a < row + 11; a++)
+                {
+                    dragInfo.rows.Add(a);
+                    dragInfo.columns.Add(column);
+                    dragInfo.text.Add("");
+                    dragInfo.colors.Add(Color.Yellow);
+                }
+            }
+            else
+            {
+                for (int a = column + 1; a < column + 1; a++)
+                {
+                    dragInfo.rows.Add(row);
+                    dragInfo.columns.Add(a);
+                    dragInfo.text.Add("");
+                    dragInfo.colors.Add(Color.Orange);
+                }
+            }
+            
         }
 
         public void dgvSelectionChanged()

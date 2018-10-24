@@ -114,11 +114,19 @@ namespace EBOMgui
             rtbConsole.SelectionStart = rtbConsole.Text.Length;
             rtbConsole.ScrollToCaret();
         }
-
+        ////////////////////////////////////////// lbAttributes Events /////////////////////////////////////////////
+        public void clearlbAttribute()
+        {
+            lbAttributes.ClearSelected();
+        }
         private void lbAttributes_MouseLeave(object sender, EventArgs e)
         {
             //dgvEBOM.Focus();
             rtbConsole.AppendText("lb mouse leave" + "\n");
+        }
+        private void lbAttributes_MouseUp(object sender, MouseEventArgs e)
+        {
+            lbMouseDown = false;
         }
         private void lbAttributes_MouseDown(object sender, MouseEventArgs e)
         {
@@ -137,13 +145,13 @@ namespace EBOMgui
                 {
                     lbAttributes.SelectedIndex = index;
                 }
-                //Thread run = new Thread(delegate ()
-                //{
-                //    if (mainFrame1.determineDrag())
-                //        changeFocusDGV();
-                //});
-                //run.Name = "drag";
-                //run.Start();
+                Thread run = new Thread(delegate ()
+                {
+                    if (mainFrame1.determineDrag())
+                        changeFocusDGV();
+                });
+                run.Name = "drag";
+                run.Start();
                 dgvEBOM.Capture = true;
             }
             else
@@ -168,54 +176,54 @@ namespace EBOMgui
             //mouseDownIndex = lbAttributes.SelectedIndex;
         }
 
+        ////////////////////////////////////////// lbAttributes Events /////////////////////////////////////////////
+
+        //////////////////////////////////////////// dgvEBOM Events ////////////////////////////////////////////////
+
         private void dgvEBOM_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
-            lbAttributes.ClearSelected();
-            rtbConsole.AppendText("dgv mouse down" + "\n");
-
-            //Thread.Sleep(1000);
-            //dgvEBOM.CurrentCell.Selected = false;
-            //dgvEBOM.ClearSelection();
-            lbMouseDown = true;
             if (e.Button == MouseButtons.Right)
-                dgvEBOM.CurrentCell = dgvEBOM.Rows[e.RowIndex].Cells[e.ColumnIndex];
-
-
+            {
+                //dgvEBOM.CurrentCell = dgvEBOM.Rows[e.RowIndex].Cells[e.ColumnIndex];
+                mainFrame1.dgvDragEvent(e.RowIndex, e.ColumnIndex);                    
+            }
+            rtbConsole.AppendText("dgv mouse down" + "\n");
         }
-
-
         private void dgvEBOM_MouseUp(object sender, MouseEventArgs e)
         {
+            mainFrame1.dgvMouseDown = false;
             if (lbMouseDown)
             {
+                lbMouseDown = false;
                 if (lbAttributes.SelectedItem != null)
                 {
                     //if (currentCellColumn >= 0 && currentCellRow >=0)
                     //    dgvEBOM[currentCellColumn, currentCellRow].Value = lbAttributes.SelectedItem.ToString();
                 }
             }
-            lbMouseDown = false;
+            else if (dgvMouseDown)
+            {
+                dgvMouseDown = false;
+            }
+            
             rtbConsole.AppendText("dgv mouse up" + "\n");
         }
         private void dgvEBOM_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
+            mainFrame1.dgvEBOM_CellMouseEnter(e.RowIndex, e.ColumnIndex);
             rtbConsole.AppendText("enter " + e.RowIndex + " " + e.ColumnIndex + "\n");
-            currentCellRow = e.RowIndex;
-            currentCellColumn = e.ColumnIndex;
+            //currentCellRow = e.RowIndex;
+            //currentCellColumn = e.ColumnIndex;
             if (lbMouseDown)
             {
-                if (lbAttributes.SelectedItem == null)
-
-                mainFrame1.paintCells(mainFrame1.headerType, e.RowIndex, e.ColumnIndex, lbAttributes.SelectedItem.ToString());
+                if (lbAttributes.SelectedItem != null)
+                    mainFrame1.paintCells(mainFrame1.headerType, e.RowIndex, e.ColumnIndex, lbAttributes.SelectedItem.ToString(), false);
+                else
+                    mainFrame1.paintCells(mainFrame1.headerType, e.RowIndex, e.ColumnIndex, , false);
             }
         }
 
-        private void dgvEBOM_MouseDown(object sender, MouseEventArgs e)
-        {
 
-
-
-        }
         
         public void dgvEBOM_ChangeColor(Color color, int row, int column)
         {
@@ -245,6 +253,14 @@ namespace EBOMgui
             dgvEBOM.ClearSelection();
         }
 
+        public void getdgvEBOMCellInfo(ref string text, ref Color color, int row, int column)
+        {
+            text = dgvEBOM[column, row].Value.ToString();
+            color = dgvEBOM[column, row].Style.BackColor;
+        }
+
+        ////////////////////////////////////////// dgvEBOM Events /////////////////////////////////////////////
+
         private void bOpenFile_Click(object sender, EventArgs e)
         {
             mainFrame1.getFile();
@@ -253,6 +269,8 @@ namespace EBOMgui
         {
             lbAttributes.Items.Add(element);
         }
+
+        
 
         private void rbHeaderColumn_CheckedChanged(object sender, EventArgs e)
         {

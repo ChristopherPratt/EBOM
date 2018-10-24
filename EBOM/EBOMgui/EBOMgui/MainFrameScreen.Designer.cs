@@ -507,7 +507,6 @@
             this.dgvEBOM.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dgvEBOM_CellMouseDown);
             this.dgvEBOM.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvEBOM_CellMouseEnter);
             this.dgvEBOM.SelectionChanged += new System.EventHandler(this.dgvEBOM_SelectionChanged);
-            this.dgvEBOM.MouseDown += new System.Windows.Forms.MouseEventHandler(this.dgvEBOM_MouseDown);
             this.dgvEBOM.MouseUp += new System.Windows.Forms.MouseEventHandler(this.dgvEBOM_MouseUp);
             // 
             // bOpenFile
@@ -532,6 +531,7 @@
             this.lbAttributes.TabIndex = 0;
             this.lbAttributes.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lbAttributes_MouseDown);
             this.lbAttributes.MouseLeave += new System.EventHandler(this.lbAttributes_MouseLeave);
+            this.lbAttributes.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lbAttributes_MouseUp);
             // 
             // mainFrameScreen
             // 
