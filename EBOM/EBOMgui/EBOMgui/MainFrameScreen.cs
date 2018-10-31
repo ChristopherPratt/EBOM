@@ -53,11 +53,17 @@ namespace EBOMgui
             for (int a = 0; a < dgvEBOM.ColumnCount; a++) //populate string[] row with all values of 1 row to fill all columns
                 row[a] = (a * 1 + 1).ToString();
             for (int a = 0; a < dgvEBOM.ColumnCount; a++) // create all columns
-                dgvEBOM.Columns[a].Name = (a+1).ToString();
+                dgvEBOM.Columns[a].Name = (a + 1).ToString();
             for (int a = 0; a < dgvEBOM.ColumnCount; a++) // create all rows
+            {
                 dgvEBOM.Rows.Add(row);
+                for (int b = 0; b < row.Length; b++)
+                {
+                    dgvEBOM[b, a].Value = row[b];
+                }
+            }
             for (int a = 0; a < dgvEBOM.ColumnCount; a++) // populate all rows
-                dgvEBOM.Rows[a].HeaderCell.Value = (a+1).ToString();
+                dgvEBOM.Rows[a].HeaderCell.Value = (a + 1).ToString();
 
             dgvEBOM.DoubleBuffered(true);
 
@@ -100,13 +106,20 @@ namespace EBOMgui
            // rtbConsole.AppendText("smokes" + "\n");
 
         }
+        public void writeLineToConsole(string text)
+        {
+            Action myACtion = () =>
+            {
+                rtbConsole.AppendText(text + "\n");
+            };
+            getScreen(myACtion);
+        }
 
-        
-       
-        
 
-     
-     
+
+
+
+
 
         private void rtbConsole_TextChanged(object sender, EventArgs e)
         {
@@ -115,6 +128,10 @@ namespace EBOMgui
             rtbConsole.ScrollToCaret();
         }
         ////////////////////////////////////////// lbAttributes Events /////////////////////////////////////////////
+        public string getlbAttributeSelectedString()
+        {
+            return lbAttributes.SelectedItem.ToString();
+        }
         public void clearlbAttribute()
         {
             lbAttributes.ClearSelected();
@@ -137,7 +154,6 @@ namespace EBOMgui
             }
             if (e.Button == MouseButtons.Right)
             {
-                lbMouseDown = true;
                 rtbConsole.AppendText("lb mouse right down" + "\n");
                 dgvEBOM.ClearSelection();
                 int index = this.lbAttributes.IndexFromPoint(e.Location);
@@ -145,16 +161,10 @@ namespace EBOMgui
                 {
                     lbAttributes.SelectedIndex = index;
                 }
-                Thread run = new Thread(delegate ()
-                {
-                    if (mainFrame1.determineDrag())
-                        changeFocusDGV();
-                });
-                run.Name = "drag";
-                run.Start();
+                mainFrame1.lbMouseDownEvent(e, index);                
                 dgvEBOM.Capture = true;
             }
-            else
+            
                 //{
                 //    dgvEBOM.Focus();
                 //    //Thread run = new Thread(delegate ()
@@ -164,9 +174,9 @@ namespace EBOMgui
                 //    //});
                 //    //run.Name = "drag";
                 //    //run.Start();
-                rtbConsole.AppendText("lb mouse down" + "\n");
+                //rtbConsole.AppendText("lb mouse down" + "\n");
                 //}
-                dgvEBOM.Focus();
+                //dgvEBOM.Focus();
 
 
             //rtbConsole.AppendText("smokes" + "\n");
@@ -185,42 +195,38 @@ namespace EBOMgui
             if (e.Button == MouseButtons.Right)
             {
                 //dgvEBOM.CurrentCell = dgvEBOM.Rows[e.RowIndex].Cells[e.ColumnIndex];
-                mainFrame1.dgvDragEvent(e.RowIndex, e.ColumnIndex);                    
+                mainFrame1.dgvMouseDownEvent(e);                    
             }
             rtbConsole.AppendText("dgv mouse down" + "\n");
         }
         private void dgvEBOM_MouseUp(object sender, MouseEventArgs e)
         {
-            mainFrame1.dgvMouseDown = false;
-            if (lbMouseDown)
-            {
-                lbMouseDown = false;
-                if (lbAttributes.SelectedItem != null)
-                {
-                    //if (currentCellColumn >= 0 && currentCellRow >=0)
-                    //    dgvEBOM[currentCellColumn, currentCellRow].Value = lbAttributes.SelectedItem.ToString();
-                }
-            }
-            else if (dgvMouseDown)
-            {
-                dgvMouseDown = false;
-            }
-            
+            //if (lbMouseDown)
+            //{
+            //    lbMouseDown = false;
+            //    if (lbAttributes.SelectedItem != null)
+            //    {
+            //        //if (currentCellColumn >= 0 && currentCellRow >=0)
+            //        //    dgvEBOM[currentCellColumn, currentCellRow].Value = lbAttributes.SelectedItem.ToString();
+            //    }
+            //}
+            //else if (dgvMouseDown)
+            //{
+            //    dgvMouseDown = false;
+            //}
+            mainFrame1.dgvMouseUpEvent(e);
             rtbConsole.AppendText("dgv mouse up" + "\n");
         }
         private void dgvEBOM_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
+            //if (e.ColumnIndex > 1 && e.RowIndex > 1)
+            //    dgvEBOM.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
             mainFrame1.dgvEBOM_CellMouseEnter(e.RowIndex, e.ColumnIndex);
             rtbConsole.AppendText("enter " + e.RowIndex + " " + e.ColumnIndex + "\n");
+            
             //currentCellRow = e.RowIndex;
             //currentCellColumn = e.ColumnIndex;
-            if (lbMouseDown)
-            {
-                if (lbAttributes.SelectedItem != null)
-                    mainFrame1.paintCells(mainFrame1.headerType, e.RowIndex, e.ColumnIndex, lbAttributes.SelectedItem.ToString(), false);
-                else
-                    mainFrame1.paintCells(mainFrame1.headerType, e.RowIndex, e.ColumnIndex, , false);
-            }
+
         }
 
 
@@ -229,7 +235,7 @@ namespace EBOMgui
         {
             Action myACtion = () =>
             {
-                dgvEBOM[column, row].Style.ForeColor = color;
+                dgvEBOM[column, row].Style.BackColor = color;
             };
             getScreen(myACtion);
         }
@@ -255,8 +261,10 @@ namespace EBOMgui
 
         public void getdgvEBOMCellInfo(ref string text, ref Color color, int row, int column)
         {
-            text = dgvEBOM[column, row].Value.ToString();
-            color = dgvEBOM[column, row].Style.BackColor;
+            
+            //text = dgvEBOM[column, row].Value.ToString();
+            color = dgvEBOM.Rows[row].Cells[column].Style.BackColor;
+            text = dgvEBOM.Rows[row].Cells[column].Value.ToString();
         }
 
         ////////////////////////////////////////// dgvEBOM Events /////////////////////////////////////////////
@@ -270,7 +278,10 @@ namespace EBOMgui
             lbAttributes.Items.Add(element);
         }
 
-        
+        private void lbAttributes_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
 
         private void rbHeaderColumn_CheckedChanged(object sender, EventArgs e)
         {

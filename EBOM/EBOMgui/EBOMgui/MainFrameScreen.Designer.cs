@@ -373,7 +373,6 @@
             this.rbHeaderColumn.Name = "rbHeaderColumn";
             this.rbHeaderColumn.Size = new System.Drawing.Size(98, 17);
             this.rbHeaderColumn.TabIndex = 1;
-            this.rbHeaderColumn.TabStop = true;
             this.rbHeaderColumn.Text = "Header Column";
             this.rbHeaderColumn.UseVisualStyleBackColor = true;
             this.rbHeaderColumn.CheckedChanged += new System.EventHandler(this.rbHeaderColumn_CheckedChanged);
@@ -381,6 +380,7 @@
             // rbTitleBlock
             // 
             this.rbTitleBlock.AutoSize = true;
+            this.rbTitleBlock.Checked = true;
             this.rbTitleBlock.Location = new System.Drawing.Point(5, 5);
             this.rbTitleBlock.Name = "rbTitleBlock";
             this.rbTitleBlock.Size = new System.Drawing.Size(75, 17);
@@ -522,13 +522,11 @@
             // lbAttributes
             // 
             this.lbAttributes.FormattingEnabled = true;
-            this.lbAttributes.Items.AddRange(new object[] {
-            "test",
-            "test1"});
             this.lbAttributes.Location = new System.Drawing.Point(7, 61);
             this.lbAttributes.Name = "lbAttributes";
             this.lbAttributes.Size = new System.Drawing.Size(182, 420);
             this.lbAttributes.TabIndex = 0;
+            this.lbAttributes.SelectedIndexChanged += new System.EventHandler(this.lbAttributes_SelectedIndexChanged);
             this.lbAttributes.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lbAttributes_MouseDown);
             this.lbAttributes.MouseLeave += new System.EventHandler(this.lbAttributes_MouseLeave);
             this.lbAttributes.MouseUp += new System.Windows.Forms.MouseEventHandler(this.lbAttributes_MouseUp);
