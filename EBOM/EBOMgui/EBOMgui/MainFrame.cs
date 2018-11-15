@@ -16,7 +16,7 @@ namespace EBOMgui
         int currentRow, currentColumn;
 
         List<int> attributeRows, attributeColumn, attributeIndex;
-        List<string> attributeNames;
+        List<string> attributeNames, placeHolder;
         List<List<string>> componentContent;
         
 
@@ -28,9 +28,9 @@ namespace EBOMgui
         string dragName;
         int prevSetIndex, currentAttributeIndex;
 
-        dgvInfo prevCellInfo,dragInfo; // for use in dragging a cell set around and having the cells your are dragging over return to their previous settings.
+        dgvInfo prevCellInfo,dragInfo,cellInfo; // for use in dragging a cell set around and having the cells your are dragging over return to their previous settings.
 
-        public bool dgvMouseDown = false, leftMouseDown = false, moveAttribute = false, lbMouseDown = false, newAttribute = false, newPaint = false;
+        public bool dgvMouseDown = false, leftMouseDown = false, moveAttribute = false, lbMouseDown = false, newAttribute = false, newPaint = false, newMove = false;
 
         public bool headerType = false;
         xmlFileHandler xmlFileHandler1;
@@ -39,6 +39,12 @@ namespace EBOMgui
         {
             mainFrameScreen1 = m;
             prevCellInfo = new dgvInfo();
+            attributeRows = new List<int>();
+            attributeColumn = new List<int>();
+            attributeIndex = new List<int>();
+            attributeNames = new List<string>();
+            componentContent = new List<List<string>>();
+            placeHolder = new List<string>() { "", "","","","","","","","","" };
         }
         public void insertAttribute()
         {
@@ -140,10 +146,15 @@ namespace EBOMgui
             if (moveAttribute)
             {
                 moveAttribute = false;
-                if (currentRow > -1 && currentColumn > -1)
+                if (currentRow > -1 && currentColumn > -1) //not on dgv border
                 {
+
+
                     attributeRows[prevSetIndex] = dragInfo.rows[0];
-                    attributeColumn[prevSetIndex] = dragInfo.columns[0];                }
+                    attributeColumn[prevSetIndex] = dragInfo.columns[0];
+                    cellInfo = generateDragList(attributeRows[prevSetIndex], attributeColumn[prevSetIndex], xmlFileHandler1.attributeNames[prevSetIndex], xmlFileHandler1.componentAttributes[prevSetIndex]);
+                    setCellInfo(cellInfo.rows, cellInfo.columns, cellInfo.colors, cellInfo.text);
+                }
                 else
                 {
                     attributeRows.RemoveAt(prevSetIndex);
@@ -160,9 +171,12 @@ namespace EBOMgui
                 {
                     attributeRows.Add(dragInfo.rows[0]);
                     attributeColumn.Add(dragInfo.columns[0]);
-                    attributeIndex.Add(dragInfo.[0]);
+                    attributeIndex.Add(currentAttributeIndex);
                     attributeNames.Add(dragInfo.text[0]);
-                    componentContent.Add(dragInfo.rows[0]);
+                    componentContent.Add(xmlFileHandler1.componentAttributes[currentAttributeIndex]);
+                    int index = attributeColumn.Count - 1;
+                    cellInfo = generateDragList(attributeRows[index], attributeColumn[index], xmlFileHandler1.attributeNames[index], xmlFileHandler1.componentAttributes[index]);
+                    setCellInfo(cellInfo.rows, cellInfo.columns, cellInfo.colors, cellInfo.text);
                 }
                 else
                 {
@@ -202,22 +216,24 @@ namespace EBOMgui
             {
                 lbMouseDown = false;
                 newAttribute = true;
-                 generateDragList(row, column, xmlFileHandler1.attributeNames[currentAttributeIndex]);
+                dragInfo = generateDragList(row, column, xmlFileHandler1.attributeNames[currentAttributeIndex], placeHolder);
                 newPaint = true;
             }
             if (dgvMouseDown)
             {
                 dgvMouseDown = false;
                 moveAttribute = true;
-                generateDragList(row, column, xmlFileHandler1.attributeNames[currentAttributeIndex]);
-                newPaint = true;
+                dragInfo = generateDragList(row, column, xmlFileHandler1.attributeNames[currentAttributeIndex], placeHolder);
+                
+                newPaint = false;
+                newMove = true;
             }
 
             if (row > -1 && column > -1)
             {
                 if (moveAttribute || newAttribute)
                 {
-                    generateDragList(row, column, xmlFileHandler1.attributeNames[currentAttributeIndex]);
+                    dragInfo = generateDragList(row, column, xmlFileHandler1.attributeNames[currentAttributeIndex], placeHolder);
                     paintCells(headerType, row, column, prevText, newPaint);
                     if (newPaint) newPaint = false;
                 }
@@ -229,6 +245,11 @@ namespace EBOMgui
         {
             if (!newPaint1)
             {
+                setCellInfo(prevCellInfo.rows, prevCellInfo.columns, prevCellInfo.colors, prevCellInfo.text);
+            }
+            if (newMove)
+            {
+                newMove = false;
                 setCellInfo(prevCellInfo.rows, prevCellInfo.columns, prevCellInfo.colors, prevCellInfo.text);
             }
             //paint(header1, row1, column1, text1, Color.Green, Color.Yellow, Color.Orange);
@@ -298,32 +319,39 @@ namespace EBOMgui
         }
 
         //creates a list of all the cells we need for dragging around a section of cells to decide where we want something.
-        public void generateDragList(int row, int column, string name)
+        dgvInfo generateDragList(int row, int column, string name, List<string> contents)
         {
-            dragInfo = new dgvInfo();
-            dragInfo.text.Add(name);
-            dragInfo.rows.Add(row);
-            dragInfo.columns.Add(column);
-            dragInfo.colors.Add(Color.Green);
+
+
+            dgvInfo tempDgvInfo = new dgvInfo();
+            tempDgvInfo.text.Add(name);
+            tempDgvInfo.rows.Add(row);
+            tempDgvInfo.columns.Add(column);
+            int headerLength = row + contents.Count + 1;
             if (headerType)
             {
-                for (int a = row + 1; a < row + 11; a++)
+                tempDgvInfo.colors.Add(Color.FromArgb(211, 211, 211));
+                for (int a = row + 1; a < headerLength; a++)
                 {
-                    dragInfo.rows.Add(a);
-                    dragInfo.columns.Add(column);
-                    dragInfo.text.Add("");
-                    dragInfo.colors.Add(Color.Yellow);
+                    tempDgvInfo.rows.Add(a);
+                    tempDgvInfo.columns.Add(column);
+                    tempDgvInfo.text.Add(contents[a - row - 1]);
+                    if (a % 2 == 0) tempDgvInfo.colors.Add(Color.FromArgb(173, 216, 230));
+                    else tempDgvInfo.colors.Add(Color.White);
                 }
+                return tempDgvInfo;
             }
             else
             {
+                tempDgvInfo.colors.Add(Color.FromArgb(191, 191, 191));
                 for (int a = column + 1; a < column + 2; a++)
                 {
-                    dragInfo.rows.Add(row);
-                    dragInfo.columns.Add(a);
-                    dragInfo.text.Add("");
-                    dragInfo.colors.Add(Color.Orange);
+                    tempDgvInfo.rows.Add(row);
+                    tempDgvInfo.columns.Add(a);
+                    tempDgvInfo.text.Add(contents[0]);
+                    tempDgvInfo.colors.Add(Color.LightGreen);
                 }
+                return tempDgvInfo;
             }
         }
 

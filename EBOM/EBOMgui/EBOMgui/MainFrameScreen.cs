@@ -203,8 +203,7 @@ namespace EBOMgui
         {
             //if (lbMouseDown)
             //{
-            //    lbMouseDown = false;
-            //    if (lbAttributes.SelectedItem != null)
+            //    lbMouseDown = false;-
             //    {
             //        //if (currentCellColumn >= 0 && currentCellRow >=0)
             //        //    dgvEBOM[currentCellColumn, currentCellRow].Value = lbAttributes.SelectedItem.ToString();
